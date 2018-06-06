@@ -1,0 +1,6 @@
+{
+    "require": {
+        "bcosca/fatfree-core": "^3.6",
+        "google/recaptcha": "^1.1"
+    }
+}

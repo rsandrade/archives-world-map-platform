@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta property="og:image" content="https://map.arquivista.net/etc/mapa.png" />
+        <meta name="description" content="The open and collaborative Archives World Map, a public archives geolocalization dataset.">
+        <meta name="keywords" content="archives, map, collaborative, open">
+        <meta name="author" content="Ricardo Sodré Andrade">
+        <title>Archives World Map</title>
+
+        <!-- Bootstrap core CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+        <!-- Leaflet -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" />
+        <script src="//unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script>
+        
+        <!-- Custom styles for this template -->
+        <link href="/templates/css/home.css" rel="stylesheet">
+        
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-120446520-1"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'UA-120446520-1');
+        </script>
+
+    </head>
+
+    <body>
+
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="/">Archives World Map</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsMap" aria-controls="navbarsMap" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarsMap">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ @dict_map_upper }}</a>
+                    <div class="dropdown-menu" aria-labelledby="dropdown01">
+                        <a class="dropdown-item" href="/add">{{ @dict_addarchives }}</a>
+                        <a class="dropdown-item" href="/stats">{{ @dict_stats }}</a>
+                        <a class="dropdown-item" href="/about">{{ @dict_about }}</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ @dict_Languages }}</a>
+                    <div class="dropdown-menu" aria-labelledby="dropdown01">
+                        <a class="dropdown-item" href="?language=en-US">English</a>
+                        <a class="dropdown-item" href="?language=es">Español</a>
+                        <a class="dropdown-item" href="?language=pt-BR">Português</a>
+                        <a class="dropdown-item" href="?language=cn">中文</a>
+                        <a class="dropdown-item" href="?language=pl">Polski</a>
+                    </div>
+                </li>
+                <check if="{{ @SESSION.logged!='yes' }}">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Your Acccount</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdown01">
+                            <a class="dropdown-item" href="/register">Register</a>
+                            <a class="dropdown-item" href="/login">Sign in</a>
+                        </div>
+                    </li>
+                </check>
+                <check if="{{ @SESSION.logged=='yes' }}">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard?qty=10&since=0">Your dashboard</a>
+                    </li>
+                </check>
+            </ul>
+            <form class="form-inline my-2 my-lg-0" method="GET" action="/q">
+                <input class="form-control mr-sm-2" type="text" id="search" name="search" aria-label="Search" pattern=".{4,}" required title="4 characters minimum">
+                <input type="hidden" id="qty" name="qty" value="10">
+                <input type="hidden" id="since" name="since" value="0">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">{{ @dict_search }}</button>
+            </form>
+        </div>
+    </nav>
+
+    <main role="main" class="container">
+        <check if="{{ @page=='home' }}">
+            <div class="container">
+            
+                <div id="mapid" style="width: 775px; height: 500px; margin: 0 auto"></div>
+                <script>
+
+                    var mymap = L.map('mapid').setView([21.525484, -12.572412], 2);
+
+                    L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiYXJxdWl2aXN0YW5ldCIsImEiOiJjaXlwOXAzN2EwMDM0NDRwY3h0aG1yejB2In0.kGvUj7knV4iUH1OSnSqzdw', {
+                    maxZoom: 18,
+                    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+                    '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a> | ' +
+                    'Archival Geodata &copy; <a href="https://map.legatum-si.net">Archives World Map</a>',
+                    id: 'mapbox.streets'
+                    }).addTo(mymap);
+
+                    {{ @pins | raw }}
+
+                </script>
+
+            </div><!--
+            <div class="container center">
+                Archives World Map is an open source project 
+                (<a href="https://github.com/rsandrade/archives-world-map-platform" target="_blank">source code</a>)
+                from <a href="http://www.legatum-si.net/web/" target="_blank">Initiative Legatum</a>
+            </div>-->
+        </check>
+        
+        <check if="{{ @page=='add-fail' }}">
+        </check>
+        
+        <check if="{{ @page=='add-done' }}">
+        </check>
+      
+        <check if="{{ @page=='add' }}">
+
+            <div style="container">
+                <h2>{{ @dict_addarchives }}</h2>
+                <p>
+                <form action="/proc-add" method="POST">
+                
+                    <div class="form-group">
+                        <label for="name">
+                            {{ @dict_archivesname }}*<br>
+                            <small>{{ @dict_nameauthorisedform | raw }}</small>
+                        </label>
+                        <input class="form-control" type="text" name="name" id="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="identifier">
+                            {{ @dict_identifier }}<br>
+                            <small>{{ @dict_identifierform | raw }}</small>
+                        </label>
+                        <input class="form-control" type="text" name="identifier" id="identifier">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="address">
+                            {{ @dict_archivesaddress }}<br>
+                        </label>
+                        <input class="form-control" type="text" name="address" id="address">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="city">
+                            {{ @dict_archivescity }}<br>
+                        </label>
+                        <input class="form-control" type="text" name="city" id="city">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="district">
+                            {{ @dict_archivesdistrict }}<br>
+                        </label>
+                        <input class="form-control" type="text" name="district" id="district">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="country">
+                            {{ @dict_archivescountry }}*<br>
+                        </label>
+                        <select class="form-control" name="country">
+                            <option value="AF">Afghanistan</option>
+                            <option value="AX">Åland Islands</option>
+                            <option value="AL">Albania</option>
+                            <option value="DZ">Algeria</option>
+                            <option value="AS">American Samoa</option>
+                            <option value="AD">Andorra</option>
+                            <option value="AO">Angola</option>
+                            <option value="AI">Anguilla</option>
+                            <option value="AQ">Antarctica</option>
+                            <option value="AG">Antigua and Barbuda</option>
+                            <option value="AR">Argentina</option>
+                            <option value="AM">Armenia</option>
+                            <option value="AW">Aruba</option>
+                            <option value="AU">Australia</option>
+                            <option value="AT">Austria</option>
+                            <option value="AZ">Azerbaijan</option>
+                            <option value="BS">Bahamas</option>
+                            <option value="BH">Bahrain</option>
+                            <option value="BD">Bangladesh</option>
+                            <option value="BB">Barbados</option>
+                            <option value="BY">Belarus</option>
+                            <option value="BE">Belgium</option>
+                            <option value="BZ">Belize</option>
+                            <option value="BJ">Benin</option>
+                            <option value="BM">Bermuda</option>
+                            <option value="BT">Bhutan</option>
+                            <option value="BO">Bolivia, Plurinational State of</option>
+                            <option value="BQ">Bonaire, Sint Eustatius and Saba</option>
+                            <option value="BA">Bosnia and Herzegovina</option>
+                            <option value="BW">Botswana</option>
+                            <option value="BV">Bouvet Island</option>
+                            <option value="BR">Brazil</option>
+                            <option value="IO">British Indian Ocean Territory</option>
+                            <option value="BN">Brunei Darussalam</option>
+                            <option value="BG">Bulgaria</option>
+                            <option value="BF">Burkina Faso</option>
+                            <option value="BI">Burundi</option>
+                            <option value="KH">Cambodia</option>
+                            <option value="CM">Cameroon</option>
+                            <option value="CA">Canada</option>
+                            <option value="CV">Cape Verde</option>
+                            <option value="KY">Cayman Islands</option>
+                            <option value="CF">Central African Republic</option>
+                            <option value="TD">Chad</option>
+                            <option value="CL">Chile</option>
+                            <option value="CN">China</option>
+                            <option value="CX">Christmas Island</option>
+                            <option value="CC">Cocos (Keeling) Islands</option>
+                            <option value="CO">Colombia</option>
+                            <option value="KM">Comoros</option>
+                            <option value="CG">Congo</option>
+                            <option value="CD">Congo, the Democratic Republic of the</option>
+                            <option value="CK">Cook Islands</option>
+                            <option value="CR">Costa Rica</option>
+                            <option value="CI">Côte d'Ivoire</option>
+                            <option value="HR">Croatia</option>
+                            <option value="CU">Cuba</option>
+                            <option value="CW">Curaçao</option>
+                            <option value="CY">Cyprus</option>
+                            <option value="CZ">Czech Republic</option>
+                            <option value="DK">Denmark</option>
+                            <option value="DJ">Djibouti</option>
+                            <option value="DM">Dominica</option>
+                            <option value="DO">Dominican Republic</option>
+                            <option value="EC">Ecuador</option>
+                            <option value="EG">Egypt</option>
+                            <option value="SV">El Salvador</option>
+                            <option value="GQ">Equatorial Guinea</option>
+                            <option value="ER">Eritrea</option>
+                            <option value="EE">Estonia</option>
+                            <option value="ET">Ethiopia</option>
+                            <option value="FK">Falkland Islands (Malvinas)</option>
+                            <option value="FO">Faroe Islands</option>
+                            <option value="FJ">Fiji</option>
+                            <option value="FI">Finland</option>
+                            <option value="FR">France</option>
+                            <option value="GF">French Guiana</option>
+                            <option value="PF">French Polynesia</option>
+                            <option value="TF">French Southern Territories</option>
+                            <option value="GA">Gabon</option>
+                            <option value="GM">Gambia</option>
+                            <option value="GE">Georgia</option>
+                            <option value="DE">Germany</option>
+                            <option value="GH">Ghana</option>
+                            <option value="GI">Gibraltar</option>
+                            <option value="GR">Greece</option>
+                            <option value="GL">Greenland</option>
+                            <option value="GD">Grenada</option>
+                            <option value="GP">Guadeloupe</option>
+                            <option value="GU">Guam</option>
+                            <option value="GT">Guatemala</option>
+                            <option value="GG">Guernsey</option>
+                            <option value="GN">Guinea</option>
+                            <option value="GW">Guinea-Bissau</option>
+                            <option value="GY">Guyana</option>
+                            <option value="HT">Haiti</option>
+                            <option value="HM">Heard Island and McDonald Islands</option>
+                            <option value="VA">Holy See (Vatican City State)</option>
+                            <option value="HN">Honduras</option>
+                            <option value="HK">Hong Kong</option>
+                            <option value="HU">Hungary</option>
+                            <option value="IS">Iceland</option>
+                            <option value="IN">India</option>
+                            <option value="ID">Indonesia</option>
+                            <option value="IR">Iran, Islamic Republic of</option>
+                            <option value="IQ">Iraq</option>
+                            <option value="IE">Ireland</option>
+                            <option value="IM">Isle of Man</option>
+                            <option value="IL">Israel</option>
+                            <option value="IT">Italy</option>
+                            <option value="JM">Jamaica</option>
+                            <option value="JP">Japan</option>
+                            <option value="JE">Jersey</option>
+                            <option value="JO">Jordan</option>
+                            <option value="KZ">Kazakhstan</option>
+                            <option value="KE">Kenya</option>
+                            <option value="KI">Kiribati</option>
+                            <option value="KP">Korea, Democratic People's Republic of</option>
+                            <option value="KR">Korea, Republic of</option>
+                            <option value="KW">Kuwait</option>
+                            <option value="KG">Kyrgyzstan</option>
+                            <option value="LA">Lao People's Democratic Republic</option>
+                            <option value="LV">Latvia</option>
+                            <option value="LB">Lebanon</option>
+                            <option value="LS">Lesotho</option>
+                            <option value="LR">Liberia</option>
+                            <option value="LY">Libya</option>
+                            <option value="LI">Liechtenstein</option>
+                            <option value="LT">Lithuania</option>
+                            <option value="LU">Luxembourg</option>
+                            <option value="MO">Macao</option>
+                            <option value="MK">Macedonia, the former Yugoslav Republic of</option>
+                            <option value="MG">Madagascar</option>
+                            <option value="MW">Malawi</option>
+                            <option value="MY">Malaysia</option>
+                            <option value="MV">Maldives</option>
+                            <option value="ML">Mali</option>
+                            <option value="MT">Malta</option>
+                            <option value="MH">Marshall Islands</option>
+                            <option value="MQ">Martinique</option>
+                            <option value="MR">Mauritania</option>
+                            <option value="MU">Mauritius</option>
+                            <option value="YT">Mayotte</option>
+                            <option value="MX">Mexico</option>
+                            <option value="FM">Micronesia, Federated States of</option>
+                            <option value="MD">Moldova, Republic of</option>
+                            <option value="MC">Monaco</option>
+                            <option value="MN">Mongolia</option>
+                            <option value="ME">Montenegro</option>
+                            <option value="MS">Montserrat</option>
+                            <option value="MA">Morocco</option>
+                            <option value="MZ">Mozambique</option>
+                            <option value="MM">Myanmar</option>
+                            <option value="NA">Namibia</option>
+                            <option value="NR">Nauru</option>
+                            <option value="NP">Nepal</option>
+                            <option value="NL">Netherlands</option>
+                            <option value="NC">New Caledonia</option>
+                            <option value="NZ">New Zealand</option>
+                            <option value="NI">Nicaragua</option>
+                            <option value="NE">Niger</option>
+                            <option value="NG">Nigeria</option>
+                            <option value="NU">Niue</option>
+                            <option value="NF">Norfolk Island</option>
+                            <option value="MP">Northern Mariana Islands</option>
+                            <option value="NO">Norway</option>
+                            <option value="OM">Oman</option>
+                            <option value="PK">Pakistan</option>
+                            <option value="PW">Palau</option>
+                            <option value="PS">Palestinian Territory, Occupied</option>
+                            <option value="PA">Panama</option>
+                            <option value="PG">Papua New Guinea</option>
+                            <option value="PY">Paraguay</option>
+                            <option value="PE">Peru</option>
+                            <option value="PH">Philippines</option>
+                            <option value="PN">Pitcairn</option>
+                            <option value="PL">Poland</option>
+                            <option value="PT">Portugal</option>
+                            <option value="PR">Puerto Rico</option>
+                            <option value="QA">Qatar</option>
+                            <option value="RE">Réunion</option>
+                            <option value="RO">Romania</option>
+                            <option value="RU">Russian Federation</option>
+                            <option value="RW">Rwanda</option>
+                            <option value="BL">Saint Barthélemy</option>
+                            <option value="SH">Saint Helena, Ascension and Tristan da Cunha</option>
+                            <option value="KN">Saint Kitts and Nevis</option>
+                            <option value="LC">Saint Lucia</option>
+                            <option value="MF">Saint Martin (French part)</option>
+                            <option value="PM">Saint Pierre and Miquelon</option>
+                            <option value="VC">Saint Vincent and the Grenadines</option>
+                            <option value="WS">Samoa</option>
+                            <option value="SM">San Marino</option>
+                            <option value="ST">Sao Tome and Principe</option>
+                            <option value="SA">Saudi Arabia</option>
+                            <option value="SN">Senegal</option>
+                            <option value="RS">Serbia</option>
+                            <option value="SC">Seychelles</option>
+                            <option value="SL">Sierra Leone</option>
+                            <option value="SG">Singapore</option>
+                            <option value="SX">Sint Maarten (Dutch part)</option>
+                            <option value="SK">Slovakia</option>
+                            <option value="SI">Slovenia</option>
+                            <option value="SB">Solomon Islands</option>
+                            <option value="SO">Somalia</option>
+                            <option value="ZA">South Africa</option>
+                            <option value="GS">South Georgia and the South Sandwich Islands</option>
+                            <option value="SS">South Sudan</option>
+                            <option value="ES">Spain</option>
+                            <option value="LK">Sri Lanka</option>
+                            <option value="SD">Sudan</option>
+                            <option value="SR">Suriname</option>
+                            <option value="SJ">Svalbard and Jan Mayen</option>
+                            <option value="SZ">Swaziland</option>
+                            <option value="SE">Sweden</option>
+                            <option value="CH">Switzerland</option>
+                            <option value="SY">Syrian Arab Republic</option>
+                            <option value="TW">Taiwan, Province of China</option>
+                            <option value="TJ">Tajikistan</option>
+                            <option value="TZ">Tanzania, United Republic of</option>
+                            <option value="TH">Thailand</option>
+                            <option value="TL">Timor-Leste</option>
+                            <option value="TG">Togo</option>
+                            <option value="TK">Tokelau</option>
+                            <option value="TO">Tonga</option>
+                            <option value="TT">Trinidad and Tobago</option>
+                            <option value="TN">Tunisia</option>
+                            <option value="TR">Turkey</option>
+                            <option value="TM">Turkmenistan</option>
+                            <option value="TC">Turks and Caicos Islands</option>
+                            <option value="TV">Tuvalu</option>
+                            <option value="UG">Uganda</option>
+                            <option value="UA">Ukraine</option>
+                            <option value="AE">United Arab Emirates</option>
+                            <option value="GB">United Kingdom</option>
+                            <option value="US">United States</option>
+                            <option value="UM">United States Minor Outlying Islands</option>
+                            <option value="UY">Uruguay</option>
+                            <option value="UZ">Uzbekistan</option>
+                            <option value="VU">Vanuatu</option>
+                            <option value="VE">Venezuela, Bolivarian Republic of</option>
+                            <option value="VN">Viet Nam</option>
+                            <option value="VG">Virgin Islands, British</option>
+                            <option value="VI">Virgin Islands, U.S.</option>
+                            <option value="WF">Wallis and Futuna</option>
+                            <option value="EH">Western Sahara</option>
+                            <option value="YE">Yemen</option>
+                            <option value="ZM">Zambia</option>
+                            <option value="ZW">Zimbabwe</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="url">
+                            {{ @dict_archivesurl }}<br>
+                        </label>
+                        <input class="form-control" type="url" name="url" id="url">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">
+                            {{ @dict_archivesemail }}<br>
+                        </label>
+                        <input class="form-control" type="email" name="email" id="email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="latitude">
+                            {{ @dict_archiveslatitude }}*<br>
+                            <small>{{ @dict_decimaldegreesplease | raw }}. {{ @dict_howfindcoordinates | raw }}</small>
+                        </label>
+                        <input class="form-control" type="text" name="latitude" id="latitude" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="longitude">
+                            {{ @dict_archiveslongitude }}*<br>
+                            <small>{{ @dict_decimaldegreesplease | raw }}. {{ @dict_howfindcoordinates | raw }}</small>
+                        </label>
+                        <input class="form-control" type="text" name="longitude" id="longitude" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contributor">
+                            {{ @dict_collaborator }}<br>
+                            <small>{{ @dict_collaboratoryou }}</small>
+                        </label>
+                        <input class="form-control" type="text" name="contributor" id="contributor" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contributoremail">
+                            {{ @dict_collaboratoremail }}<br>
+                            <small>{{ @dict_collaboratoremailobs }}</small>
+                        </label>
+                        <input class="form-control" type="email" name="contributoremail" id="contributoremail" required>
+                    </div>
+
+                    <div class="g-recaptcha" data-sitekey="6LfYUxQUAAAAADfxBIQkBcT7SocM_Z1R5kZufEJN"></div>  
+
+                    <button type="submit" class="btn btn-primary">{{ @dict_sendtoinclusion }}</button>
+                </form>
+                </p>                
+            </div>
+        </check>
+
+        <check if="{{ @page=='proc-add' }}">
+
+            <div style="container">
+            <h2>{{ @dict_statsof }}</h2>
+            
+            <p></p>
+
+        </check>
+
+        <check if="{{ @page=='about' }}">
+
+            <div style="text-align: left;">
+                {{ @dict_textabout | raw }}
+            </div>
+            
+            <div style="text-align: left;"><br><!--
+                BTC: 17nR36GgNHr8jciFwTrBxqq97xmdoMakKa<br>
+                LTC: LUeRE1BCAftPb2NGJyfy5bSXtmUXbEfHS7<br>--> 
+            </div>
+
+        </check>
+      
+        <check if="{{ @page=='stats' }}">
+            <div style="container">
+            <h2>{{ @dict_statsof }}</h2>
+                <ul> 
+                    <li>{{ @dict_institutionsdb }}
+                        <ul>
+                            <li>{{ @qty_institutions }}</li>
+                        </ul>
+                    </li>
+                    <li>{{ @dict_top10countries }}
+                        <ul>
+                            <li><img src="/templates/img/flags/{{ @ranking_countries[0]['country'] }}.PNG" title="{{ @ranking_countries[0]['country'] }}"> - {{ @ranking_countries[0]['visits'] }} {{ @dict_institutionsdb }}</li>
+                            <li><img src="/templates/img/flags/{{ @ranking_countries[1]['country'] }}.PNG" title="{{ @ranking_countries[1]['country'] }}"> - {{ @ranking_countries[1]['visits'] }} {{ @dict_institutionsdb }}</li>
+                            <li><img src="/templates/img/flags/{{ @ranking_countries[2]['country'] }}.PNG" title="{{ @ranking_countries[2]['country'] }}"> - {{ @ranking_countries[2]['visits'] }} {{ @dict_institutionsdb }}</li>
+                            <li><img src="/templates/img/flags/{{ @ranking_countries[3]['country'] }}.PNG" title="{{ @ranking_countries[3]['country'] }}"> - {{ @ranking_countries[3]['visits'] }} {{ @dict_institutionsdb }}</li>
+                            <li><img src="/templates/img/flags/{{ @ranking_countries[4]['country'] }}.PNG" title="{{ @ranking_countries[4]['country'] }}"> - {{ @ranking_countries[4]['visits'] }} {{ @dict_institutionsdb }}</li>
+                            <li><img src="/templates/img/flags/{{ @ranking_countries[5]['country'] }}.PNG" title="{{ @ranking_countries[5]['country'] }}"> - {{ @ranking_countries[5]['visits'] }} {{ @dict_institutionsdb }}</li>
+                            <li><img src="/templates/img/flags/{{ @ranking_countries[6]['country'] }}.PNG" title="{{ @ranking_countries[6]['country'] }}"> - {{ @ranking_countries[6]['visits'] }} {{ @dict_institutionsdb }}</li>
+                            <li><img src="/templates/img/flags/{{ @ranking_countries[7]['country'] }}.PNG" title="{{ @ranking_countries[7]['country'] }}"> - {{ @ranking_countries[7]['visits'] }} {{ @dict_institutionsdb }}</li>
+                            <li><img src="/templates/img/flags/{{ @ranking_countries[8]['country'] }}.PNG" title="{{ @ranking_countries[8]['country'] }}"> - {{ @ranking_countries[8]['visits'] }} {{ @dict_institutionsdb }}</li>
+                            <li><img src="/templates/img/flags/{{ @ranking_countries[9]['country'] }}.PNG" title="{{ @ranking_countries[9]['country'] }}"> - {{ @ranking_countries[9]['visits'] }} {{ @dict_institutionsdb }}</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </check>
+        
+        <check if="{{ @page=='info' }}">
+            <repeat group="{{ @res_institution }}" value="{{ @item }}">
+                <a href="javascript:history.back()">Back</a><br>
+                <div class="container">
+                    <br>
+                    <h4>{{ @item.name }}</h4>
+                    <div class="row">
+                        <div class="col-5">
+                            
+                            <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                            <!-- ArchivesMap Banner -->
+                            <ins class="adsbygoogle"
+                                 style="display:inline-block;width:320px;height:100px"
+                                 data-ad-client="ca-pub-7782822980648918"
+                                 data-ad-slot="7811732608"></ins>
+                            <script>
+                            (adsbygoogle = window.adsbygoogle || []).push({});
+                            </script>
+                        
+                            <div id="mapid" style="height: 350px;"></div>
+                            <script>
+                                var mymap = L.map('mapid').setView([{{ @item.latitude }}, {{ @item.longitude }}], 15);
+
+                                L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiYXJxdWl2aXN0YW5ldCIsImEiOiJjaXlwOXAzN2EwMDM0NDRwY3h0aG1yejB2In0.kGvUj7knV4iUH1OSnSqzdw', {
+                                maxZoom: 18,
+                                attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+                                'Archival Geodata &copy; <a href="https://www.achivesmap.org">Archives World Map</a>',
+                                id: 'mapbox.streets'
+                                }).addTo(mymap);
+                                
+                                var marker1 = L.marker([{{ @item.latitude }}, {{ @item.longitude }}]).addTo(mymap).bindPopup('{{ @item.name }}');
+                            </script>    
+                        </div>
+                        <div class="col-7">
+                            <table class="table table-striped">
+                                <tbody>
+                                    <repeat group="{{ @res_institution }}" value="{{ @item }}">
+                                        <tr>
+                                            <td><strong>Name</strong></td>
+                                            <td>{{ @item.name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Latitude</strong></td>
+                                            <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Longitude</strong></td>
+                                            <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Address</strong></td>
+                                            <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>City, State/District</strong></td>
+                                            <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Country</strong></td>
+                                            <td><a href="/bycountry/{{ @item.country }}?qty=10&since=0"><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></a></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Email</strong></td>
+                                            <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>URL</strong></td>
+                                            <td><a href="{{ @item.url }}" target="_blank">{{ @item.url }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Mapper</strong></td>
+                                            <td><a href="/mapper/{{ @item.iduser }}">{{ @item.collaborator_name }}</a></td>
+                                        </tr>
+                                    </repeat>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </repeat>
+        </check>
+  
+        <check if="{{ @page=='q' }}">
+            <a href="javascript:history.back()">Back</a><br>
+            <h4>Search result for "{{ @GET.search }}"</h4>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">Institution</th>
+                            <th scope="col">Country</th>
+                            <th scope="col">Content</th>
+                            <th scope="col">Community</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <repeat group="{{ @res_institutions }}" value="{{ @item }}">
+                            <tr>
+                                <td><a href="/info/{{ @item.id }}">{{ @item.name }}</a></td>
+                                <td><a href="/bycountry/{{ @item.country }}?qty=10&since=0"><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></a></td>
+                                <td><a href="/content/{{ @item.id }}">0 items</a></td>
+                                <td><a href="/community/{{ @item.id }}">0 messages</a></td>
+                            </tr>
+                        </repeat>
+                    </tbody>
+                </table>
+                
+                <check if="{{ @contagem==0 }}">
+                    No records were found.
+                </check>
+                <check if="{{ @contagem>0 }}">
+                    <check if="{{ @GET.since>0 }}">
+                      <a href="/q?search={{ @GET.search }}&since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
+                    </check>
+                      {{ @GET.since }} to {{ @GET.qty+@GET.since }} ({{ @contagem }} items found)
+                    <check if="{{ @contagem>@GET.qty+@GET.since }}">
+                      <a href="/q?search={{ @GET.search }}&since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
+                    </check>
+                </check>
+            </div>
+        </check>
+        
+        <check if="{{ @page=='bycountry' }}">
+            <a href="javascript:history.back()">Back</a><br>
+            <h4>Institutions in <img src="/templates/img/flags/{{ @PARAMS.country }}.PNG" title="{{ @PARAMS.country }}"></h4>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">Institution</th>
+                            <th scope="col">Country</th>
+                            <th scope="col">Content</th>
+                            <th scope="col">Community</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <repeat group="{{ @res_institutions }}" value="{{ @item }}">
+                            <tr>
+                                <td><a href="/info/{{ @item.id }}">{{ @item.name }}</a></td>
+                                <td><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></td>
+                                <td><a href="/content/{{ @item.id }}">0 items</a></td>
+                                <td><a href="/community/{{ @item.id }}">0 messages</a></td>
+                            </tr>
+                        </repeat>
+                    </tbody>
+                </table>
+                
+                <check if="{{ @contagem==0 }}">
+                    No records were found.
+                </check>
+                <check if="{{ @contagem>0 }}">
+                    <check if="{{ @GET.since>0 }}">
+                      <a href="/q?search={{ @GET.search }}&since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
+                    </check>
+                      {{ @GET.since }} to {{ @GET.qty+@GET.since }} ({{ @contagem }} items found)
+                    <check if="{{ @contagem>@GET.qty+@GET.since }}">
+                      <a href="/q?search={{ @GET.search }}&since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
+                    </check>
+                </check>
+            </div>
+        </check>
+      
+    </main><!-- /.container -->
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+</body>
+</html>

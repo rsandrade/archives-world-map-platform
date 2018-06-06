@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta property="og:image" content="https://map.arquivista.net/etc/mapa.png" />
+    <meta name="description" content="The open and collaborative Archives World Map, a public archives geolocalization dataset.">
+    <meta name="keywords" content="archives, map, collaborative, open">
+    <meta name="author" content="Ricardo Sodré Andrade">
+
+    <title>Archives World Map</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+
+    <!-- Custom styles for this template -->
+    <link href="/templates/css/dashboard.css" rel="stylesheet">
+    
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" />
+    <script src="//unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script>
+    
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-120446520-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-120446520-1');
+    </script>
+  </head>
+
+  <body>
+    <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="/">Archives World Map</a>
+      <ul class="navbar-nav px-3">
+        <li class="nav-item text-nowrap">
+          <a class="nav-link" href="/logout">Sign out</a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link<check if="{{ @page=='dashboard' }}"> active</check>" href="/dashboard?qty=10&since=0">
+                                <span data-feather="home"></span>
+                                Dashboard <span class="sr-only">(current)</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link<check if="{{ @page=='myprofile' }}"> active</check>" href="/myprofile">
+                                <span data-feather="user"></span>
+                                My Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link<check if="{{ @page=='myinstitutions' }}"> active</check>" href="/myinstitutions?qty=10&since=0">
+                                <span data-feather="box"></span>
+                                My Institutions
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Dashboard</h1>
+            </div>
+            
+            <check if="{{ @page=='dashboard' }}">
+                <h4>Institutions</h4>
+                <div class="table-responsive">
+                    
+                    <table class="table table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">My Institutions</th>
+                                <th scope="col">Institution</th>
+                                <th scope="col">Country</th>
+                                <th scope="col">Content</th>
+                                <th scope="col">Community</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <repeat group="{{ @res_institutions }}" value="{{ @item }}">
+                                <tr>
+                                    <check if="{{ @item.iduserinst }}">
+                                        <false>
+                                            <td><a href="/addtomyinstitutions/{{ @item.id }}"><span data-feather="plus-circle"></span> Follow</a></td>
+                                        </false>
+                                        <true>
+                                            <td><a href="/removefrommyinstitutions/{{ @item.id }}"><span data-feather="minus-circle"></span> Unfollow</a></td>
+                                        </true>
+                                    </check>
+                                    <td><a href="/institution/{{ @item.id }}">{{ @item.name }}</a></td>
+                                    <td><a href="/bycountry/{{ @item.country }}"><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></a></td>
+                                    <td><a href="/content/{{ @item.id }}">0 items</a></td>
+                                    <td><a href="/community/{{ @item.id }}">0 messages</a></td>
+                                </tr>
+                            </repeat>
+                        </tbody>
+                    </table>
+                    
+                    <check if="{{ @contagem==0 }}">
+                        No records were found.
+                    </check>
+                    <check if="{{ @contagem>0 }}">
+                        <check if="{{ @GET.since>0 }}">
+                          <a href="/dashboard?since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
+                        </check>
+                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} of {{ @contagem }}
+                        <check if="{{ @contagem>@GET.qty+@GET.since }}">
+                          <a href="/dashboard?since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
+                        </check>
+                    </check>
+                </div>
+            </check>
+            
+            <check if="{{ @page=='myinstitutions' }}">
+                <h4>My Institutions</h4>
+                <div class="table-responsive">
+                    
+                    <table class="table table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">My Institution</th>
+                                <th scope="col">Institution</th>
+                                <th scope="col">Country</th>
+                                <th scope="col">Content</th>
+                                <th scope="col">Community</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <repeat group="{{ @res_myinstitutions }}" value="{{ @item }}">
+                                <tr>
+                                    <td><a href="/removefrommyinstitutions/{{ @item.id }}"><span data-feather="minus-circle"></span> Unfollow</a></td>
+                                    <td><a href="/institution/{{ @item.id }}">{{ @item.name }}</a></td>
+                                    <td><a href="/bycountry/{{ @item.country }}"><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></a></td>
+                                    <td><a href="/content/{{ @item.id }}">0 items</a></td>
+                                    <td><a href="/community/{{ @item.id }}">0 messages</a></td>
+                                </tr>
+                            </repeat>
+                        </tbody>
+                    </table>
+                    
+                    <check if="{{ @contagem==0 }}">
+                        No records were found.
+                    </check>
+                    <check if="{{ @contagem>0 }}">
+                        <check if="{{ @GET.since>0 }}">
+                          <a href="/myinstitutions?since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
+                        </check>
+                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} of {{ @contagem }}
+                        <check if="{{ @contagem>@GET.qty+@GET.since }}">
+                          <a href="/myinstitutions?since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
+                        </check>
+                    </check>
+                    
+                </div>
+            </check>
+            
+            <check if="{{ @page=='institution' }}">
+                <repeat group="{{ @res_institution }}" value="{{ @item }}">
+                    <a href="javascript:history.back()">Back</a><br>
+                    <div class="container">
+                        <br>
+                        <h4>{{ @item.name }}</h4>
+                        <div class="row">
+                            <div class="col-5">
+                                <div id="mapid" style="height: 350px;"></div>
+                                    <script>
+                                        var mymap = L.map('mapid').setView([{{ @item.latitude }}, {{ @item.longitude }}], 15);
+
+                                        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiYXJxdWl2aXN0YW5ldCIsImEiOiJjaXlwOXAzN2EwMDM0NDRwY3h0aG1yejB2In0.kGvUj7knV4iUH1OSnSqzdw', {
+                                        maxZoom: 18,
+                                        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+                                        'Archival Geodata &copy; <a href="https://map.legatum-si.net">Archives World Map</a>',
+                                        id: 'mapbox.streets'
+                                        }).addTo(mymap);
+                                        
+                                        var marker1 = L.marker([{{ @item.latitude }}, {{ @item.longitude }}]).addTo(mymap).bindPopup('{{ @item.name }}');
+                                    </script>    
+                            </div>
+                            <div class="col-7">
+                                <table class="table table-striped">
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Name</strong></td>
+                                            <td>{{ @item.name }}</td>
+                                            <td>Edit</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Latitude</strong></td>
+                                            <td>{{ @item.latitude }}</td>
+                                            <td>Edit</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Longitude</strong></td>
+                                            <td>{{ @item.longitude }}</td>
+                                            <td>Edit</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Address</strong></td>
+                                            <td>{{ @item.address }}</td>
+                                            <td>Edit</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>City, State/District</strong></td>
+                                            <td>{{ @item.city }}, {{ @item.district }}</td>
+                                            <td>Edit</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Country</strong></td>
+                                            <td>{{ @item.country }}</td>
+                                            <td>Edit</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Email</strong></td>
+                                            <td>{{ @item.email }}</td>
+                                            <td>Edit</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>URL</strong></td>
+                                            <td><a href="{{ @item.url }}" target="_blank">{{ @item.url }}</td>
+                                            <td>Edit</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Mapper</strong></td>
+                                            <td><a href="/mapper/{{ @item.iduser }}">{{ @item.collaborator_name }}</a></td>
+                                            <td>What is a Mapper?</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </repeat>
+            </check>
+            
+            <check if="{{ @page=='mapper' }}">
+                <repeat group="{{ @res_user }}" value="{{ @item }}">
+                    <a href="javascript:history.back()">Back</a><br>
+                    <div class="container">
+                        <br>
+                        <h4>Mapper Profile</h4><br>
+                        <div class="row">
+                            <div class="col-4 text-center">
+                                <img src="/templates/img/male-female.png" class="img-fluid"> 
+                            </div>
+                            <div class="col-8">
+                                <table class="table table-striped">
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Name</strong></td>
+                                            <td>
+                                                {{ @item.name }}
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Genre</strong></td>
+                                            <td>{{ @item.genre }}</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>City</strong></td>
+                                            <td>{{ @item.city }}</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>State / District</strong></td>
+                                            <td>{{ @item.district }}</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Country</strong></td>
+                                            <td><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Website</strong></td>
+                                            <td><a href="{{ @item.url }}" target="_target">{{ @item.url }}</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Institution</strong></td>
+                                            <td>{{ @item.institution }}</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Education</strong></td>
+                                            <td>{{ @item.education }}</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>AWM Score</strong></td>
+                                            <td>{{ @awm_score }}</td>
+                                            <td>What is this?</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </repeat>
+            </check>
+            
+            <check if="{{ @page=='myprofile' }}">
+                <repeat group="{{ @res_user }}" value="{{ @item }}">
+                    <a href="javascript:history.back()">Back</a><br>
+                    <div class="container">
+                        <br>
+                        <h4>My Profile</h4><br>
+                        <div class="row">
+                            <div class="col-4  text-center">
+                                <img src="/templates/img/male-female.png" class="img-fluid">  
+                                
+                                <p><br>Change your photo</p>
+                                
+                                <p><a href="/edit-myprofile">Edit your profile</a></p>
+                            </div>
+                            <div class="col-8">
+                                <table class="table table-striped">
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Name</strong></td>
+                                            <td>{{ @item.name }}</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Genre</strong></td>
+                                            <td>{{ @item.genre }}</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>E-mail</strong></td>
+                                            <td>{{ @item.email }}</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>City</strong></td>
+                                            <td>{{ @item.city }}</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>State / District</strong></td>
+                                            <td>{{ @item.district }}</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Country</strong></td>
+                                            <td><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Website</strong></td>
+                                            <td><a href="{{ @item.url }}" target="_target">{{ @item.url }}</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Institution</strong></td>
+                                            <td>{{ @item.institution }}</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Education</strong></td>
+                                            <td>{{ @item.education }}</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>AWM Score</strong></td>
+                                            <td>{{ @awm_score }}</td>
+                                            <td>What is this?</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </repeat>
+            </check>
+            
+            <check if="{{ @page=='edit-myprofile' }}">
+                <repeat group="{{ @res_user }}" value="{{ @item }}">
+                    <a href="javascript:history.back()">Back</a><br>
+                    <div class="container">
+                        <br>
+                        <h4>Edit My Profile</h4><br>
+                        <div class="row">
+                            <div class="col">
+                                <form action="/proc-edit-myprofile" method="POST">
+                                <table class="table table-striped">
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Name</strong></td>
+                                            <td><input class="form-control" type="text" name="name" id="name" value="{{ @item.name }}" required></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Genre</strong></td>
+                                            <td>
+                                                <select class="form-control" id="genre" name="genre">
+                                                    <option value="Male"<check if="{{ @item.genre=='Male' }}"> selected</check>>Male</option>
+                                                    <option value="Female"<check if="{{ @item.genre=='Female' }}"> selected</check>>Female</option>
+                                                    <option value="Not informed"<check if="{{ @item.genre=='Not informed' }}"> selected</check>>Not informed</option>
+                                                </select>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>E-mail</strong></td>
+                                            <td><input class="form-control" type="email" name="email" id="email" value="{{ @item.email }}" required></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>City</strong></td>
+                                            <td><input class="form-control" type="text" name="city" id="city" value="{{ @item.city }}"></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>State / District</strong></td>
+                                            <td><input class="form-control" type="text" name="district" id="district" value="{{ @item.district }}"></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Country</strong></td>
+                                            <td>
+                                                <select class="form-control" id="country" name="country">
+                                                    {{ @selected_country | raw }}
+                                                    <option value="AF">Afghanistan</option>
+                                                    <option value="AX">Åland Islands</option>
+                                                    <option value="AL">Albania</option>
+                                                    <option value="DZ">Algeria</option>
+                                                    <option value="AS">American Samoa</option>
+                                                    <option value="AD">Andorra</option>
+                                                    <option value="AO">Angola</option>
+                                                    <option value="AI">Anguilla</option>
+                                                    <option value="AQ">Antarctica</option>
+                                                    <option value="AG">Antigua and Barbuda</option>
+                                                    <option value="AR">Argentina</option>
+                                                    <option value="AM">Armenia</option>
+                                                    <option value="AW">Aruba</option>
+                                                    <option value="AU">Australia</option>
+                                                    <option value="AT">Austria</option>
+                                                    <option value="AZ">Azerbaijan</option>
+                                                    <option value="BS">Bahamas</option>
+                                                    <option value="BH">Bahrain</option>
+                                                    <option value="BD">Bangladesh</option>
+                                                    <option value="BB">Barbados</option>
+                                                    <option value="BY">Belarus</option>
+                                                    <option value="BE">Belgium</option>
+                                                    <option value="BZ">Belize</option>
+                                                    <option value="BJ">Benin</option>
+                                                    <option value="BM">Bermuda</option>
+                                                    <option value="BT">Bhutan</option>
+                                                    <option value="BO">Bolivia, Plurinational State of</option>
+                                                    <option value="BQ">Bonaire, Sint Eustatius and Saba</option>
+                                                    <option value="BA">Bosnia and Herzegovina</option>
+                                                    <option value="BW">Botswana</option>
+                                                    <option value="BV">Bouvet Island</option>
+                                                    <option value="BR">Brazil</option>
+                                                    <option value="IO">British Indian Ocean Territory</option>
+                                                    <option value="BN">Brunei Darussalam</option>
+                                                    <option value="BG">Bulgaria</option>
+                                                    <option value="BF">Burkina Faso</option>
+                                                    <option value="BI">Burundi</option>
+                                                    <option value="KH">Cambodia</option>
+                                                    <option value="CM">Cameroon</option>
+                                                    <option value="CA">Canada</option>
+                                                    <option value="CV">Cape Verde</option>
+                                                    <option value="KY">Cayman Islands</option>
+                                                    <option value="CF">Central African Republic</option>
+                                                    <option value="TD">Chad</option>
+                                                    <option value="CL">Chile</option>
+                                                    <option value="CN">China</option>
+                                                    <option value="CX">Christmas Island</option>
+                                                    <option value="CC">Cocos (Keeling) Islands</option>
+                                                    <option value="CO">Colombia</option>
+                                                    <option value="KM">Comoros</option>
+                                                    <option value="CG">Congo</option>
+                                                    <option value="CD">Congo, the Democratic Republic of the</option>
+                                                    <option value="CK">Cook Islands</option>
+                                                    <option value="CR">Costa Rica</option>
+                                                    <option value="CI">Côte d'Ivoire</option>
+                                                    <option value="HR">Croatia</option>
+                                                    <option value="CU">Cuba</option>
+                                                    <option value="CW">Curaçao</option>
+                                                    <option value="CY">Cyprus</option>
+                                                    <option value="CZ">Czech Republic</option>
+                                                    <option value="DK">Denmark</option>
+                                                    <option value="DJ">Djibouti</option>
+                                                    <option value="DM">Dominica</option>
+                                                    <option value="DO">Dominican Republic</option>
+                                                    <option value="EC">Ecuador</option>
+                                                    <option value="EG">Egypt</option>
+                                                    <option value="SV">El Salvador</option>
+                                                    <option value="GQ">Equatorial Guinea</option>
+                                                    <option value="ER">Eritrea</option>
+                                                    <option value="EE">Estonia</option>
+                                                    <option value="ET">Ethiopia</option>
+                                                    <option value="FK">Falkland Islands (Malvinas)</option>
+                                                    <option value="FO">Faroe Islands</option>
+                                                    <option value="FJ">Fiji</option>
+                                                    <option value="FI">Finland</option>
+                                                    <option value="FR">France</option>
+                                                    <option value="GF">French Guiana</option>
+                                                    <option value="PF">French Polynesia</option>
+                                                    <option value="TF">French Southern Territories</option>
+                                                    <option value="GA">Gabon</option>
+                                                    <option value="GM">Gambia</option>
+                                                    <option value="GE">Georgia</option>
+                                                    <option value="DE">Germany</option>
+                                                    <option value="GH">Ghana</option>
+                                                    <option value="GI">Gibraltar</option>
+                                                    <option value="GR">Greece</option>
+                                                    <option value="GL">Greenland</option>
+                                                    <option value="GD">Grenada</option>
+                                                    <option value="GP">Guadeloupe</option>
+                                                    <option value="GU">Guam</option>
+                                                    <option value="GT">Guatemala</option>
+                                                    <option value="GG">Guernsey</option>
+                                                    <option value="GN">Guinea</option>
+                                                    <option value="GW">Guinea-Bissau</option>
+                                                    <option value="GY">Guyana</option>
+                                                    <option value="HT">Haiti</option>
+                                                    <option value="HM">Heard Island and McDonald Islands</option>
+                                                    <option value="VA">Holy See (Vatican City State)</option>
+                                                    <option value="HN">Honduras</option>
+                                                    <option value="HK">Hong Kong</option>
+                                                    <option value="HU">Hungary</option>
+                                                    <option value="IS">Iceland</option>
+                                                    <option value="IN">India</option>
+                                                    <option value="ID">Indonesia</option>
+                                                    <option value="IR">Iran, Islamic Republic of</option>
+                                                    <option value="IQ">Iraq</option>
+                                                    <option value="IE">Ireland</option>
+                                                    <option value="IM">Isle of Man</option>
+                                                    <option value="IL">Israel</option>
+                                                    <option value="IT">Italy</option>
+                                                    <option value="JM">Jamaica</option>
+                                                    <option value="JP">Japan</option>
+                                                    <option value="JE">Jersey</option>
+                                                    <option value="JO">Jordan</option>
+                                                    <option value="KZ">Kazakhstan</option>
+                                                    <option value="KE">Kenya</option>
+                                                    <option value="KI">Kiribati</option>
+                                                    <option value="KP">Korea, Democratic People's Republic of</option>
+                                                    <option value="KR">Korea, Republic of</option>
+                                                    <option value="KW">Kuwait</option>
+                                                    <option value="KG">Kyrgyzstan</option>
+                                                    <option value="LA">Lao People's Democratic Republic</option>
+                                                    <option value="LV">Latvia</option>
+                                                    <option value="LB">Lebanon</option>
+                                                    <option value="LS">Lesotho</option>
+                                                    <option value="LR">Liberia</option>
+                                                    <option value="LY">Libya</option>
+                                                    <option value="LI">Liechtenstein</option>
+                                                    <option value="LT">Lithuania</option>
+                                                    <option value="LU">Luxembourg</option>
+                                                    <option value="MO">Macao</option>
+                                                    <option value="MK">Macedonia, the former Yugoslav Republic of</option>
+                                                    <option value="MG">Madagascar</option>
+                                                    <option value="MW">Malawi</option>
+                                                    <option value="MY">Malaysia</option>
+                                                    <option value="MV">Maldives</option>
+                                                    <option value="ML">Mali</option>
+                                                    <option value="MT">Malta</option>
+                                                    <option value="MH">Marshall Islands</option>
+                                                    <option value="MQ">Martinique</option>
+                                                    <option value="MR">Mauritania</option>
+                                                    <option value="MU">Mauritius</option>
+                                                    <option value="YT">Mayotte</option>
+                                                    <option value="MX">Mexico</option>
+                                                    <option value="FM">Micronesia, Federated States of</option>
+                                                    <option value="MD">Moldova, Republic of</option>
+                                                    <option value="MC">Monaco</option>
+                                                    <option value="MN">Mongolia</option>
+                                                    <option value="ME">Montenegro</option>
+                                                    <option value="MS">Montserrat</option>
+                                                    <option value="MA">Morocco</option>
+                                                    <option value="MZ">Mozambique</option>
+                                                    <option value="MM">Myanmar</option>
+                                                    <option value="NA">Namibia</option>
+                                                    <option value="NR">Nauru</option>
+                                                    <option value="NP">Nepal</option>
+                                                    <option value="NL">Netherlands</option>
+                                                    <option value="NC">New Caledonia</option>
+                                                    <option value="NZ">New Zealand</option>
+                                                    <option value="NI">Nicaragua</option>
+                                                    <option value="NE">Niger</option>
+                                                    <option value="NG">Nigeria</option>
+                                                    <option value="NU">Niue</option>
+                                                    <option value="NF">Norfolk Island</option>
+                                                    <option value="MP">Northern Mariana Islands</option>
+                                                    <option value="NO">Norway</option>
+                                                    <option value="OM">Oman</option>
+                                                    <option value="PK">Pakistan</option>
+                                                    <option value="PW">Palau</option>
+                                                    <option value="PS">Palestinian Territory, Occupied</option>
+                                                    <option value="PA">Panama</option>
+                                                    <option value="PG">Papua New Guinea</option>
+                                                    <option value="PY">Paraguay</option>
+                                                    <option value="PE">Peru</option>
+                                                    <option value="PH">Philippines</option>
+                                                    <option value="PN">Pitcairn</option>
+                                                    <option value="PL">Poland</option>
+                                                    <option value="PT">Portugal</option>
+                                                    <option value="PR">Puerto Rico</option>
+                                                    <option value="QA">Qatar</option>
+                                                    <option value="RE">Réunion</option>
+                                                    <option value="RO">Romania</option>
+                                                    <option value="RU">Russian Federation</option>
+                                                    <option value="RW">Rwanda</option>
+                                                    <option value="BL">Saint Barthélemy</option>
+                                                    <option value="SH">Saint Helena, Ascension and Tristan da Cunha</option>
+                                                    <option value="KN">Saint Kitts and Nevis</option>
+                                                    <option value="LC">Saint Lucia</option>
+                                                    <option value="MF">Saint Martin (French part)</option>
+                                                    <option value="PM">Saint Pierre and Miquelon</option>
+                                                    <option value="VC">Saint Vincent and the Grenadines</option>
+                                                    <option value="WS">Samoa</option>
+                                                    <option value="SM">San Marino</option>
+                                                    <option value="ST">Sao Tome and Principe</option>
+                                                    <option value="SA">Saudi Arabia</option>
+                                                    <option value="SN">Senegal</option>
+                                                    <option value="RS">Serbia</option>
+                                                    <option value="SC">Seychelles</option>
+                                                    <option value="SL">Sierra Leone</option>
+                                                    <option value="SG">Singapore</option>
+                                                    <option value="SX">Sint Maarten (Dutch part)</option>
+                                                    <option value="SK">Slovakia</option>
+                                                    <option value="SI">Slovenia</option>
+                                                    <option value="SB">Solomon Islands</option>
+                                                    <option value="SO">Somalia</option>
+                                                    <option value="ZA">South Africa</option>
+                                                    <option value="GS">South Georgia and the South Sandwich Islands</option>
+                                                    <option value="SS">South Sudan</option>
+                                                    <option value="ES">Spain</option>
+                                                    <option value="LK">Sri Lanka</option>
+                                                    <option value="SD">Sudan</option>
+                                                    <option value="SR">Suriname</option>
+                                                    <option value="SJ">Svalbard and Jan Mayen</option>
+                                                    <option value="SZ">Swaziland</option>
+                                                    <option value="SE">Sweden</option>
+                                                    <option value="CH">Switzerland</option>
+                                                    <option value="SY">Syrian Arab Republic</option>
+                                                    <option value="TW">Taiwan, Province of China</option>
+                                                    <option value="TJ">Tajikistan</option>
+                                                    <option value="TZ">Tanzania, United Republic of</option>
+                                                    <option value="TH">Thailand</option>
+                                                    <option value="TL">Timor-Leste</option>
+                                                    <option value="TG">Togo</option>
+                                                    <option value="TK">Tokelau</option>
+                                                    <option value="TO">Tonga</option>
+                                                    <option value="TT">Trinidad and Tobago</option>
+                                                    <option value="TN">Tunisia</option>
+                                                    <option value="TR">Turkey</option>
+                                                    <option value="TM">Turkmenistan</option>
+                                                    <option value="TC">Turks and Caicos Islands</option>
+                                                    <option value="TV">Tuvalu</option>
+                                                    <option value="UG">Uganda</option>
+                                                    <option value="UA">Ukraine</option>
+                                                    <option value="AE">United Arab Emirates</option>
+                                                    <option value="GB">United Kingdom</option>
+                                                    <option value="US">United States</option>
+                                                    <option value="UM">United States Minor Outlying Islands</option>
+                                                    <option value="UY">Uruguay</option>
+                                                    <option value="UZ">Uzbekistan</option>
+                                                    <option value="VU">Vanuatu</option>
+                                                    <option value="VE">Venezuela, Bolivarian Republic of</option>
+                                                    <option value="VN">Viet Nam</option>
+                                                    <option value="VG">Virgin Islands, British</option>
+                                                    <option value="VI">Virgin Islands, U.S.</option>
+                                                    <option value="WF">Wallis and Futuna</option>
+                                                    <option value="EH">Western Sahara</option>
+                                                    <option value="YE">Yemen</option>
+                                                    <option value="ZM">Zambia</option>
+                                                    <option value="ZW">Zimbabwe</option>
+                                                </select>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Website</strong></td>
+                                            <td><input class="form-control" type="url" name="url" id="url" value="{{ @item.url }}"></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Institution</strong></td>
+                                            <td><input class="form-control" type="text" name="institution" id="institution" value="{{ @item.institution }}"></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Education</strong></td>
+                                            <td>
+                                                <select class="form-control" id="education" name="education">
+                                                    <option value="Bachelor"<check if="{{ @item.education=='Bachelor' }}"> selected</check>>Bachelor</option>
+                                                    <option value="Master"<check if="{{ @item.education=='Master' }}"> selected</check>>Master</option>
+                                                    <option value="PhD student"<check if="{{ @item.education=='PhD student' }}"> selected</check>>PhD student</option>
+                                                    <option value="PhD"<check if="{{ @item.education=='PhD' }}"> selected</check>>PhD</option>
+                                                </select>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td><button type="submit" class="btn btn-primary">Submit</button></td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </repeat>
+            </check>
+            
+        </main>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/feather-icons/dist/feather.min.js"></script>
+    <script>
+      feather.replace()
+    </script>
+
+  </body>
+</html>
