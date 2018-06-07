@@ -19,7 +19,7 @@ require('config.php');
 
 // Fat-free vars
 $f3->set('TEMP', $f3->get('AWM_TEMP_DIR'));
-$f3->set('DEBUG', 0); // 0 = production; 3 = debug mode
+$f3->set('DEBUG', 3); // 0 = production; 3 = debug mode
 $f3->set('CACHE', 'memcached=localhost:11211');
 $f3->set('TZ', 'America/Bahia');
 $f3->set('LOCALES', 'dict/');
@@ -83,10 +83,10 @@ $f3->route('POST /proc-add',
         if ($resp->isSuccess()) {
             // Recaptcha verified! 
             
-            $iduser = $f3->get('db')->exec('SELECT id,name, email FROM Users WHERE email = ?', $f3->get('POST.contributoremail'));
-            
-            // If the email is not at Users table...
-            if($f3->get('db')->count() != 0){
+             $iduser = $f3->get('db')->exec('SELECT id,name, email FROM Users WHERE email = ?', $f3->get('POST.contributoremail'));
+
+            // If the email is not in Users table...
+            if($f3->get('db')->count() == 0){
                 
                 // Add user
                 $f3->set('sql', new DB\SQL\Mapper($f3->get('db'), 'Users'));
@@ -98,34 +98,7 @@ $f3->route('POST /proc-add',
                 $iduser = $f3->get('sql')->get('_id');
                 
                 // Add Institution
-                $f3->set('sql', new DB\SQL\Mapper($f3->get('db'), 'Institution'));
-                $f3->get('sql')->latitude =             $f3->get('POST.latitude');
-                $f3->get('sql')->longitude =            $f3->get('POST.longitude');
-                $f3->get('sql')->name =                 $f3->get('POST.name');
-                $f3->get('sql')->identifier =           $f3->get('POST.identifier');
-                $f3->get('sql')->address =              $f3->get('POST.address');
-                $f3->get('sql')->city =                 $f3->get('POST.city');
-                $f3->get('sql')->district =             $f3->get('POST.district');
-                $f3->get('sql')->country =              $f3->get('POST.country');
-                $f3->get('sql')->url =                  $f3->get('POST.url');
-                $f3->get('sql')->email =                $f3->get('POST.email');
-                $f3->get('sql')->collaborator_name =    $f3->get('POST.collaborator_name');
-                $f3->get('sql')->collaborator_email =   $f3->get('POST.collaborator_email');
-                $f3->get('sql')->status =               'waiting';
-                $f3->get('sql')->save();
-                
-                $idinstitution = $f3->get('sql')->get('_id');
-                
-                // Add Users_Institutions
-                $f3->set('sql', new DB\SQL\Mapper($f3->get('db'), 'Users_Institutions'));
-                $f3->get('sql')->iduser =             $f3->get('POST.latitude');
-                $f3->get('sql')->idinstitution =      $f3->get('POST.latitude');
-                $f3->get('sql')->save();
-            } else {
-                // Do not add user
-                              
-                // Add Institution
-                $f3->set('sql', new DB\SQL\Mapper($f3->get('db'), 'Institution'));
+                $f3->set('sql', new DB\SQL\Mapper($f3->get('db'), 'Institutions'));
                 $f3->get('sql')->latitude =             $f3->get('POST.latitude');
                 $f3->get('sql')->longitude =            $f3->get('POST.longitude');
                 $f3->get('sql')->name =                 $f3->get('POST.name');
@@ -146,7 +119,34 @@ $f3->route('POST /proc-add',
                 // Add Users_Institutions
                 $f3->set('sql', new DB\SQL\Mapper($f3->get('db'), 'Users_Institutions'));
                 $f3->get('sql')->iduser =             $iduser[0]['id'];
-                $f3->get('sql')->idinstitution =      $f3->get('POST.latitude');
+                $f3->get('sql')->idinstitution =      $idinstitution;
+                $f3->get('sql')->save();
+            } else {
+                // Do not add user
+                              
+                // Add Institution
+                $f3->set('sql', new DB\SQL\Mapper($f3->get('db'), 'Institutions'));
+                $f3->get('sql')->latitude =             $f3->get('POST.latitude');
+                $f3->get('sql')->longitude =            $f3->get('POST.longitude');
+                $f3->get('sql')->name =                 $f3->get('POST.name');
+                $f3->get('sql')->identifier =           $f3->get('POST.identifier');
+                $f3->get('sql')->address =              $f3->get('POST.address');
+                $f3->get('sql')->city =                 $f3->get('POST.city');
+                $f3->get('sql')->district =             $f3->get('POST.district');
+                $f3->get('sql')->country =              $f3->get('POST.country');
+                $f3->get('sql')->url =                  $f3->get('POST.url');
+                $f3->get('sql')->email =                $f3->get('POST.email');
+                $f3->get('sql')->collaborator_name =    $f3->get('POST.collaborator_name');
+                $f3->get('sql')->collaborator_email =   $f3->get('POST.collaborator_email');
+                $f3->get('sql')->status =               'waiting';
+                $f3->get('sql')->save();
+                
+                $idinstitution = $f3->get('sql')->get('_id');
+                
+                // Add Users_Institutions
+                $f3->set('sql', new DB\SQL\Mapper($f3->get('db'), 'Users_Institutions'));
+                $f3->get('sql')->iduser =             $iduser[0]['id'];
+                $f3->get('sql')->idinstitution =      $idinstitution;
                 $f3->get('sql')->save();
                 
             }
@@ -154,13 +154,13 @@ $f3->route('POST /proc-add',
             // Send the congratulations for add
             $f3->get('smtp')->set('To', '"' . $iduser[0]['name'] . '" <' . $iduser[0]['email'] . '>');
             $f3->get('smtp')->set('From', '"Archives World Map" <' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
-            $f3->get('smtp')->set('Subject', '[Archives World Map] Your password was changed');
+            $f3->get('smtp')->set('Subject', '[Archives World Map] Thank you for your submission');
             $f3->get('smtp')->set('Errors-to', '<ricardo@feudo.org>');
             $f3->get('smtp')->set('content-type','text/html;charset=utf-8');
             $f3->set('message', 'Hi' . ' ' . $iduser[0]['name'] . '!' .
-                '<p>Thank you this new institution data! Our team will check your data and add it ' .
-                'into the <strong>Archives World Map</strong> as fast we can!</p>' . 
-                '<p>You sent us data about: ' . $f3->get('POST.name') . '</p>' .
+                '<p>Thank you that new institution data you sent to us! Our team will check it and add ' .
+                'into the <strong>Archives World Map</strong> as fast we can.</p>' . 
+                '<p>You sent us data about: <strong>' . $f3->get('POST.name') . '</strong></p>' .
                 '<p>Best regards,</p>' .
                 '<p>Ricardo Sodré Andrade' . 
                 '<br>admin@archivesmap.org' .
@@ -638,8 +638,7 @@ $f3->route('GET /info/@id',
         $f3->set('res_institution', $f3->get('db')->exec(
             'SELECT Institutions.*, Users.id AS iduser, Users.email AS useremail FROM Institutions ' .
             'LEFT JOIN Users ON Users.email = Institutions.collaborator_email ' .
-            'WHERE Institutions.id = ' . $f3->get('PARAMS.id')
-        )); 
+            'WHERE Institutions.id = ' . $f3->get('PARAMS.id'))); 
 
         echo \Template::instance()->render('templates/home.html');
     }
@@ -648,7 +647,7 @@ $f3->route('GET /info/@id',
 $f3->route('GET /q',
     function($f3) {
         $f3->set('page','q');   
-                 
+        
         // Get Institutions
         $f3->set('res_institutions', $f3->get('db')->exec(
                 'SELECT id, name, country FROM Institutions ' .
@@ -666,7 +665,7 @@ $f3->route('GET /q',
             'WHERE name LIKE ?', '%'.$f3->get('GET.search').'%'
         );
         $f3->set('contagem', $f3->get('db')->count());
-
+    
         echo \Template::instance()->render('templates/home.html');
     }
 );
@@ -688,15 +687,52 @@ $f3->route('GET /bycountry/@country',
         
         // Count
         $f3->get('db')->exec(
-            'SELECT id, name, country FROM Institutions ' .
+            'SELECT id FROM Institutions ' .
             'WHERE country = ?', $f3->get('PARAMS.country')
         );
         $f3->set('contagem', $f3->get('db')->count());
-
-        echo \Template::instance()->render('templates/home.html');
+        
+        if($f3->get('SESSION.logged') == 'yes'){
+            echo \Template::instance()->render('templates/dashboard.html');
+        } else {
+            echo \Template::instance()->render('templates/home.html');
+        }
     }
 );
 
+$f3->route('GET /content/@id',
+    function($f3) {
+        $f3->set('page','content');
+        
+        // Verify if is logged
+        if(!$f3->get('SESSION.logged')){ $f3->reroute('/'); }
+        
+        // Get Content
+        $f3->set('res_content', $f3->get('db')->exec(
+                'SELECT Content_Institutions.id AS idci, Content.* FROM Content_Institutions ' .
+                'RIGHT JOIN Content_Institutions ON Content_Institutions.idcontent = Content.id ' .
+                'WHERE Content_Institutions.idinstitution = :idinst ' .
+                'LIMIT :qty OFFSET :since',
+            array(
+                ':idinst'=>(int)$f3->get('PARAMS.id'),
+                ':qty'=>(int)$f3->get('GET.qty'),
+                ':since'=>(int)$f3->get('GET.since')
+            )
+        )); 
+        die(var_dump($f3->get('res_content')));
+
+        
+        // Count
+        $f3->get('db')->exec(
+            'SELECT Institutions.id, Content.* FROM Content_Institutions ' .
+            'INNER JOIN Institutions ON Institutions.id = Content_Institutions.idinstitution ' .
+            'INNER JOIN Content ON Content.id = Content_Institutions.idcontent '
+        ); 
+        $f3->set('contagem', $f3->get('db')->count());
+        
+        echo \Template::instance()->render('templates/dashboard.html');
+    }
+);
 
 /*
 $f3->route('GET /migrarbd',

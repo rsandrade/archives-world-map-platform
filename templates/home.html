@@ -18,6 +18,11 @@
         <!-- Custom styles for this template -->
         <link href="/templates/css/home.css" rel="stylesheet">
         
+        <!-- Google Recaptcha -->
+        <check if="{{ @page=='add' }}">
+        <script src='https://www.google.com/recaptcha/api.js'></script>
+        </check>
+        
         <!-- Global site tag (gtag.js) - Google Analytics -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=UA-120446520-1"></script>
         <script>
@@ -72,7 +77,7 @@
                     </li>
                 </check>
             </ul>
-            <form class="form-inline my-2 my-lg-0" method="GET" action="/q">
+            <form class="form-inline my-2 my-lg-0" id="formsearch" name="formsearch" method="GET" action="/q">
                 <input class="form-control mr-sm-2" type="text" id="search" name="search" aria-label="Search" pattern=".{4,}" required title="4 characters minimum">
                 <input type="hidden" id="qty" name="qty" value="10">
                 <input type="hidden" id="since" name="since" value="0">
@@ -111,9 +116,11 @@
         </check>
         
         <check if="{{ @page=='add-fail' }}">
+            fail
         </check>
         
         <check if="{{ @page=='add-done' }}">
+            ok
         </check>
       
         <check if="{{ @page=='add' }}">
@@ -463,7 +470,7 @@
                         <input class="form-control" type="email" name="contributoremail" id="contributoremail" required>
                     </div>
 
-                    <div class="g-recaptcha" data-sitekey="6LfYUxQUAAAAADfxBIQkBcT7SocM_Z1R5kZufEJN"></div>  
+                    <div class="g-recaptcha" data-sitekey="6LdQg10UAAAAACSoSSVMftWTwQPUGHNSIBxcNjbm"></div>
 
                     <button type="submit" class="btn btn-primary">{{ @dict_sendtoinclusion }}</button>
                 </form>
@@ -474,10 +481,12 @@
         <check if="{{ @page=='proc-add' }}">
 
             <div style="container">
-            <h2>{{ @dict_statsof }}</h2>
+            <h2>Thank you!</h2>
+            <div class="container">
+            <p>You sucessfully send a new Institution to Archives World Map!</p>
+            <br>
+            <a href="/">Return to Archives World Map</a>
             
-            <p></p>
-
         </check>
 
         <check if="{{ @page=='about' }}">
@@ -524,21 +533,21 @@
             <repeat group="{{ @res_institution }}" value="{{ @item }}">
                 <a href="javascript:history.back()">Back</a><br>
                 <div class="container">
-                    <br>
+                    <p class="text-center">
+                        <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                        <!-- Banner Grande ArchivesWorld Map -->
+                        <ins class="adsbygoogle"
+                             style="display:inline-block;width:970px;height:90px"
+                             data-ad-client="ca-pub-7782822980648918"
+                             data-ad-slot="9417593782"></ins>
+                        <script>
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                        </script>
+                    </p>
                     <h4>{{ @item.name }}</h4>
                     <div class="row">
+                       
                         <div class="col-5">
-                            
-                            <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-                            <!-- ArchivesMap Banner -->
-                            <ins class="adsbygoogle"
-                                 style="display:inline-block;width:320px;height:100px"
-                                 data-ad-client="ca-pub-7782822980648918"
-                                 data-ad-slot="7811732608"></ins>
-                            <script>
-                            (adsbygoogle = window.adsbygoogle || []).push({});
-                            </script>
-                        
                             <div id="mapid" style="height: 350px;"></div>
                             <script>
                                 var mymap = L.map('mapid').setView([{{ @item.latitude }}, {{ @item.longitude }}], 15);
@@ -562,36 +571,78 @@
                                             <td>{{ @item.name }}</td>
                                         </tr>
                                         <tr>
-                                            <td><strong>Latitude</strong></td>
-                                            <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Longitude</strong></td>
-                                            <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Address</strong></td>
-                                            <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>City, State/District</strong></td>
-                                            <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
+                                            <td><strong>URL</strong></td>
+                                            <td><a href="{{ @item.url }}" target="_blank">{{ @item.url }}</td>
                                         </tr>
                                         <tr>
                                             <td><strong>Country</strong></td>
                                             <td><a href="/bycountry/{{ @item.country }}?qty=10&since=0"><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></a></td>
                                         </tr>
                                         <tr>
-                                            <td><strong>Email</strong></td>
-                                            <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
+                                            <td><strong>Latitude</strong></td>
+                                            <check if="{{ @SESSION.logged=='yes' }}">
+                                                <true>
+                                                    <td><small>{{ @item.latitude }}</small></td>
+                                                </true>
+                                                <false>
+                                                    <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
+                                                </false>
+                                            </check>
                                         </tr>
                                         <tr>
-                                            <td><strong>URL</strong></td>
-                                            <td><a href="{{ @item.url }}" target="_blank">{{ @item.url }}</td>
+                                            <td><strong>Longitude</strong></td>
+                                            <check if="{{ @SESSION.logged=='yes' }}">
+                                                <true>
+                                                    <td><small>{{ @item.longitude }}</small></td>
+                                                </true>
+                                                <false>
+                                                    <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
+                                                </false>
+                                            </check>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Address</strong></td>
+                                            <check if="{{ @SESSION.logged=='yes' }}">
+                                                <true>
+                                                    <td><small>{{ @item.address }}</small></td>
+                                                </true>
+                                                <false>
+                                                    <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
+                                                </false>
+                                            </check>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>City, State/District</strong></td>
+                                            <check if="{{ @SESSION.logged=='yes' }}">
+                                                <true>
+                                                    <td><small>{{ @item.city }}, {{ @item.district }}</small></td>
+                                                </true>
+                                                <false>
+                                                    <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
+                                                </false>
+                                            </check>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Email</strong></td>
+                                            <check if="{{ @SESSION.logged=='yes' }}">
+                                                <true>
+                                                    <td><small>{{ @item.email }}</small></td>
+                                                </true>
+                                                <false>
+                                                    <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
+                                                </false>
+                                            </check>
                                         </tr>
                                         <tr>
                                             <td><strong>Mapper</strong></td>
-                                            <td><a href="/mapper/{{ @item.iduser }}">{{ @item.collaborator_name }}</a></td>
+                                            <check if="{{ @SESSION.logged=='yes' }}">
+                                                <true>
+                                                    <td><small>{{ @item.collaborator_name }}</small></td>
+                                                </true>
+                                                <false>
+                                                    <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
+                                                </false>
+                                            </check>
                                         </tr>
                                     </repeat>
                                 </tbody>
@@ -604,6 +655,17 @@
   
         <check if="{{ @page=='q' }}">
             <a href="javascript:history.back()">Back</a><br>
+            <p class="text-center">
+                <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                <!-- Banner Grande ArchivesWorld Map -->
+                <ins class="adsbygoogle"
+                     style="display:inline-block;width:970px;height:90px"
+                     data-ad-client="ca-pub-7782822980648918"
+                     data-ad-slot="9417593782"></ins>
+                <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </p>
             <h4>Search result for "{{ @GET.search }}"</h4>
             <div class="table-responsive">
                 <table class="table table-striped">
@@ -644,6 +706,17 @@
         
         <check if="{{ @page=='bycountry' }}">
             <a href="javascript:history.back()">Back</a><br>
+            <p class="text-center">
+                <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                <!-- Banner Grande ArchivesWorld Map -->
+                <ins class="adsbygoogle"
+                     style="display:inline-block;width:970px;height:90px"
+                     data-ad-client="ca-pub-7782822980648918"
+                     data-ad-slot="9417593782"></ins>
+                <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </p>
             <h4>Institutions in <img src="/templates/img/flags/{{ @PARAMS.country }}.PNG" title="{{ @PARAMS.country }}"></h4>
             <div class="table-responsive">
                 <table class="table table-striped">

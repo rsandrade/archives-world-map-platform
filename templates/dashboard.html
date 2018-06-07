@@ -76,7 +76,6 @@
             <check if="{{ @page=='dashboard' }}">
                 <h4>Institutions</h4>
                 <div class="table-responsive">
-                    
                     <table class="table table-striped">
                         <thead class="thead-dark">
                             <tr>
@@ -99,8 +98,8 @@
                                         </true>
                                     </check>
                                     <td><a href="/institution/{{ @item.id }}">{{ @item.name }}</a></td>
-                                    <td><a href="/bycountry/{{ @item.country }}"><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></a></td>
-                                    <td><a href="/content/{{ @item.id }}">0 items</a></td>
+                                    <td><a href="/bycountry/{{ @item.country }}?qty=10&since=0"><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></a></td>
+                                    <td><a href="/content/{{ @item.id }}?qty=10&since=0">0 items</a></td>
                                     <td><a href="/community/{{ @item.id }}">0 messages</a></td>
                                 </tr>
                             </repeat>
@@ -141,7 +140,7 @@
                                 <tr>
                                     <td><a href="/removefrommyinstitutions/{{ @item.id }}"><span data-feather="minus-circle"></span> Unfollow</a></td>
                                     <td><a href="/institution/{{ @item.id }}">{{ @item.name }}</a></td>
-                                    <td><a href="/bycountry/{{ @item.country }}"><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></a></td>
+                                    <td><a href="/bycountry/{{ @item.country }}?qty=10&since=0"><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></a></td>
                                     <td><a href="/content/{{ @item.id }}">0 items</a></td>
                                     <td><a href="/community/{{ @item.id }}">0 messages</a></td>
                                 </tr>
@@ -196,6 +195,16 @@
                                             <td>Edit</td>
                                         </tr>
                                         <tr>
+                                            <td><strong>URL</strong></td>
+                                            <td><a href="{{ @item.url }}" target="_blank">{{ @item.url }}</td>
+                                            <td>Edit</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Country</strong></td>
+                                            <td>{{ @item.country }}</td>
+                                            <td>Edit</td>
+                                        </tr>
+                                        <tr>
                                             <td><strong>Latitude</strong></td>
                                             <td>{{ @item.latitude }}</td>
                                             <td>Edit</td>
@@ -216,18 +225,8 @@
                                             <td>Edit</td>
                                         </tr>
                                         <tr>
-                                            <td><strong>Country</strong></td>
-                                            <td>{{ @item.country }}</td>
-                                            <td>Edit</td>
-                                        </tr>
-                                        <tr>
                                             <td><strong>Email</strong></td>
                                             <td>{{ @item.email }}</td>
-                                            <td>Edit</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>URL</strong></td>
-                                            <td><a href="{{ @item.url }}" target="_blank">{{ @item.url }}</td>
                                             <td>Edit</td>
                                         </tr>
                                         <tr>
@@ -241,6 +240,47 @@
                         </div>
                     </div>
                 </repeat>
+            </check>
+            
+            <check if="{{ @page=='content' }}">
+                <h4>Content</h4>
+                <div class="table-responsive">
+                    
+                    <table class="table table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Title</th>
+                                <th scope="col">Creator</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Subject</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <repeat group="{{ @res_content }}" value="{{ @item }}">
+                                <tr>
+                                    <td>{{ @item.title }}</td>
+                                    <td>{{ @item.creator }}</td>
+                                    <td>{{ @item.date }}<td>
+                                    <td>{{ @item.subject }}</td>
+                                </tr>
+                            </repeat>
+                        </tbody>
+                    </table>
+                    
+                    <check if="{{ @contagem==0 }}">
+                        No records were found.
+                    </check>
+                    <check if="{{ @contagem>0 }}">
+                        <check if="{{ @GET.since>0 }}">
+                          <a href="/content/{{ @PARAMS.id }}?since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
+                        </check>
+                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} of {{ @contagem }}
+                        <check if="{{ @contagem>@GET.qty+@GET.since }}">
+                          <a href="/content/{{ @PARAMS.id }}?since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
+                        </check>
+                    </check>
+                    
+                </div>
             </check>
             
             <check if="{{ @page=='mapper' }}">
@@ -309,6 +349,46 @@
                         </div>
                     </div>
                 </repeat>
+            </check>
+            
+            <check if="{{ @page=='bycountry' }}">
+                <a href="javascript:history.back()">Back</a><br>
+                <h4>Institutions in <img src="/templates/img/flags/{{ @PARAMS.country }}.PNG" title="{{ @PARAMS.country }}"></h4>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Institution</th>
+                                <th scope="col">Country</th>
+                                <th scope="col">Content</th>
+                                <th scope="col">Community</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <repeat group="{{ @res_institutions }}" value="{{ @item }}">
+                                <tr>
+                                    <td><a href="/institution/{{ @item.id }}">{{ @item.name }}</a></td>
+                                    <td><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></td>
+                                    <td><a href="/content/{{ @item.id }}">0 items</a></td>
+                                    <td><a href="/community/{{ @item.id }}">0 messages</a></td>
+                                </tr>
+                            </repeat>
+                        </tbody>
+                    </table>
+                    
+                    <check if="{{ @contagem==0 }}">
+                        No records were found.
+                    </check>
+                    <check if="{{ @contagem>0 }}">
+                        <check if="{{ @GET.since>0 }}">
+                          <a href="/q?search={{ @GET.search }}&since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
+                        </check>
+                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} ({{ @contagem }} items found)
+                        <check if="{{ @contagem>@GET.qty+@GET.since }}">
+                          <a href="/q?search={{ @GET.search }}&since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
+                        </check>
+                    </check>
+                </div>
             </check>
             
             <check if="{{ @page=='myprofile' }}">

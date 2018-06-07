@@ -3,7 +3,9 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <meta name="description" content="">
+        <meta property="og:image" content="https://map.arquivista.net/etc/mapa.png" />
+        <meta name="description" content="The open and collaborative Archives World Map, a public archives geolocalization dataset.">
+        <meta name="keywords" content="archives, map, collaborative, open">
         <meta name="author" content="Ricardo Sodré Andrade">
         <!-- <link rel="icon" href="../../../../favicon.ico">-->
 
@@ -64,26 +66,19 @@
     <check if="{{ @page=='proc-recover-password' }}">
         <div class="container">
         <check if="{{ @emailerror=='noerror' }}">
-            A nova senha foi enviada com sucesso para o seu email.
-            <br>
-            {{ @smtplog }}
+            Your new password was sent!
             <br>
             <a href="/login">Return to login</a>
         </check>
         
         <check if="{{ @emailerror=='sendingfailed' }}">
-            Houve uma falha no envio do email. Por favor, tente novamente 
-            após alguns minutos ou entre em contato com o suporte técnico.
-            <br>
-            {{ @smtplog }}
+            Something weird happened when we tried to send you an e-mail. Please try again or contact us to tell about it.
             <br>
             <a href="/login">Return to login</a>
         </check>
         
         <check if="{{ @emailerror=='noemailregistered' }}">
-            Não há nenhum usuário com esse email que tenha acesso ao sistema.
-            <br>
-            {{ @smtplog }}
+            We do not have the e-mail address at our database.
             <br>
             <a href="/login">Return to login</a>
         </check>
@@ -382,7 +377,7 @@
         <div style="container">
             Welcome! You will receive some instructions by e-mail soon.
             <br>
-            <a href="/">Return to Archives World Map</a>
+            <a href="/login">Sign in</a>
         </div>
     
     </check>
