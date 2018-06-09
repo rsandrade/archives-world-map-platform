@@ -46,6 +46,10 @@ $f3->set('db', new DB\SQL(
     $f3->get('AWM_DB_PASSWORD')
 ));
  
+// SESSION
+ini_set('session.gc_maxlifetime', 10800);
+new \DB\SQL\Session($f3->get('db'));
+ 
 // ======================
 // App
 // ======================
@@ -311,7 +315,7 @@ $f3->route('POST /proc-register',
 
             // Verify if user already exist
             if($f3->get('sql')->count(array('email LIKE ?', '%'.$f3->get('POST.inputEmail').'%')) > 0){
-                echo 'alert("This email was registered before. Recover your password.");';
+                echo 'alert("This email was registered before. You can recover your password instead.");';
                 $f3->reroute('/login');
             }
             
@@ -389,7 +393,7 @@ $f3->route('POST /proc-recover-password',
                 }
 
                 $f3->get('db')->exec('UPDATE Users SET hash = "' . $crypt->hash($randomString, $f3->get('AWM_PASSWORDGEN_SALT')) . 
-                    '" WHERE email = "' . $f3->get('POST.inputEmail') . '"');
+                    '" WHERE email = ?', $f3->get('POST.inputEmail'));
 
                 // Send the new password by email
                 $f3->get('smtp')->set('To', '"' . $f3->get('res_recover')[0]['name'] . '" <' . $f3->get('res_recover')[0]['email'] . '>');
@@ -437,8 +441,11 @@ $f3->route('GET /dashboard',
             'SELECT Institutions.id, Institutions.name, Institutions.country, Users_Institutions.id AS iduserinst FROM Institutions ' .
             'LEFT JOIN Users_Institutions ON Users_Institutions.idinstitution = Institutions.id ' . ' ' .
             'AND Users_Institutions.iduser = ' . $f3->get('SESSION.id')[0]['id'] . ' ' .
-            'LIMIT ' . $f3->get('GET.qty') . ' ' .
-            'OFFSET ' . $f3->get('GET.since')
+            'LIMIT :limit OFFSET :offset',
+            array(
+                ':limit'=>$f3->get('GET.qty'),
+                ':offset'=>$f3->get('GET.since')
+            )
         ));
         
         // Count
@@ -462,8 +469,11 @@ $f3->route('GET /myinstitutions',
             'INNER JOIN Institutions ON Users_Institutions.idinstitution = Institutions.id ' .
             'INNER JOIN Users ON Users_Institutions.iduser = Users.id ' .
             'WHERE iduser = ' . $f3->get('SESSION.id')[0]['id'] . ' ' .
-            'LIMIT ' . $f3->get('GET.qty') . ' ' .
-            'OFFSET ' . $f3->get('GET.since')
+            'LIMIT :limit OFFSET :offset',
+            array(
+                ':limit'=>$f3->get('GET.qty'),
+                ':offset'=>$f3->get('GET.since')
+            )
         ));
         
         // Count
@@ -489,7 +499,7 @@ $f3->route('GET /institution/@id',
         $f3->set('res_institution', $f3->get('db')->exec(
             'SELECT Institutions.*, Users.id AS iduser FROM Institutions ' .
             'INNER JOIN Users ON Users.email = Institutions.collaborator_email ' .
-            'WHERE Institutions.id = ' . $f3->get('PARAMS.id')
+            'WHERE Institutions.id = ?', $f3->get('PARAMS.id')
         )); 
 
         echo \Template::instance()->render('templates/dashboard.html');
@@ -506,7 +516,7 @@ $f3->route('GET /mapper/@id',
         $f3->set('res_user', $f3->get('db')->exec(
             'SELECT Users.id, Users.name, Profiles.* FROM Users ' .
             'LEFT JOIN Profiles ON Profiles.iduser = Users.id ' .
-            'WHERE Users.id = ' . $f3->get('PARAMS.id')
+            'WHERE Users.id = )', $f3->get('PARAMS.id')
         )); 
 
         $f3->set('awm_score', Score::calc($f3->get('db'), $f3->get('PARAMS.id')));
@@ -600,12 +610,19 @@ $f3->route('GET /addtomyinstitutions/@id',
         // Verify if is logged
         if(!$f3->get('SESSION.logged')){ $f3->reroute('/'); }
         
-        // Verificar se já não está
-        
-        // Adicionar
-        $f3->get('db')->exec('INSERT INTO Users_Institutions(iduser, idinstitution) VALUES (' .
-            $f3->get('SESSION.id')[0]['id'] . ', ' . $f3->get('PARAMS.id') . ')'
+        // Verify if is already in myinstitution
+        $f3->get('db')->exec('SELECT id FROM Users_Institutions WHERE iduser = :iduser AND idinstitution = :idinstitution',
+            array(
+                ':iduser'=>$f3->get('SESSION.id')[0]['id'],
+                ':idinstitution'=>(int)$f3->get('PARAMS.id')
+            )
         );
+        if($f3->get('db')->count() = 0){
+            // Verified, to add
+            $f3->get('db')->exec('INSERT INTO Users_Institutions(iduser, idinstitution) VALUES (' .
+                $f3->get('SESSION.id')[0]['id'] . ', ?', $f3->get('PARAMS.id') . ')'
+            );
+        }
     
         $f3->reroute($_SERVER['HTTP_REFERER']);
     }
@@ -621,10 +638,11 @@ $f3->route('GET /removefrommyinstitutions/@id',
         // Verificar se não já está fora antes de remover
         $res = $f3->get('db')->exec('SELECT id FROM Users_Institutions WHERE iduser = ' . 
             $f3->get('SESSION.id')[0]['id'] . ' ' .
-            'AND idinstitution = ' . $f3->get('PARAMS.id')
+            'AND idinstitution = ?', $f3->get('PARAMS.id')
         );
+        
+        // Remover
         if($f3->get('db')->count() > 0){
-            // Remover
             $f3->get('db')->exec('DELETE FROM Users_Institutions WHERE id = ' . $res[0]['id']);
         }
         $f3->reroute($_SERVER['HTTP_REFERER']);
@@ -638,7 +656,7 @@ $f3->route('GET /info/@id',
         $f3->set('res_institution', $f3->get('db')->exec(
             'SELECT Institutions.*, Users.id AS iduser, Users.email AS useremail FROM Institutions ' .
             'LEFT JOIN Users ON Users.email = Institutions.collaborator_email ' .
-            'WHERE Institutions.id = ' . $f3->get('PARAMS.id'))); 
+            'WHERE Institutions.id = ?', $f3->get('PARAMS.id'))); 
 
         echo \Template::instance()->render('templates/home.html');
     }
