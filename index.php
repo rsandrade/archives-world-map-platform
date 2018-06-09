@@ -443,8 +443,8 @@ $f3->route('GET /dashboard',
             'AND Users_Institutions.iduser = ' . $f3->get('SESSION.id')[0]['id'] . ' ' .
             'LIMIT :limit OFFSET :offset',
             array(
-                ':limit'=>$f3->get('GET.qty'),
-                ':offset'=>$f3->get('GET.since')
+                ':limit'=>(int)$f3->get('GET.qty'),
+                ':offset'=>(int)$f3->get('GET.since')
             )
         ));
         
@@ -471,8 +471,8 @@ $f3->route('GET /myinstitutions',
             'WHERE iduser = ' . $f3->get('SESSION.id')[0]['id'] . ' ' .
             'LIMIT :limit OFFSET :offset',
             array(
-                ':limit'=>$f3->get('GET.qty'),
-                ':offset'=>$f3->get('GET.since')
+                ':limit'=>(int)$f3->get('GET.qty'),
+                ':offset'=>(int)$f3->get('GET.since')
             )
         ));
         
@@ -617,10 +617,10 @@ $f3->route('GET /addtomyinstitutions/@id',
                 ':idinstitution'=>(int)$f3->get('PARAMS.id')
             )
         );
-        if($f3->get('db')->count() = 0){
+        if($f3->get('db')->count() == 0){
             // Verified, to add
             $f3->get('db')->exec('INSERT INTO Users_Institutions(iduser, idinstitution) VALUES (' .
-                $f3->get('SESSION.id')[0]['id'] . ', ?', $f3->get('PARAMS.id') . ')'
+                $f3->get('SESSION.id')[0]['id'] . ', ?)', $f3->get('PARAMS.id')
             );
         }
     
