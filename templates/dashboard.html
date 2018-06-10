@@ -99,8 +99,8 @@
                                     </check>
                                     <td><a href="/institution/{{ @item.id }}">{{ @item.name }}</a></td>
                                     <td><a href="/bycountry/{{ @item.country }}?qty=10&since=0"><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></a></td>
-                                    <td><a href="/content/{{ @item.id }}?qty=10&since=0">0 items</a></td>
-                                    <td><a href="/community/{{ @item.id }}">0 messages</a></td>
+                                    <td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td>
+                                    <td><a href="/community/{{ @item.id }}?qty=10&since=0">Forum</a></td>
                                 </tr>
                             </repeat>
                         </tbody>
@@ -141,8 +141,8 @@
                                     <td><a href="/removefrommyinstitutions/{{ @item.id }}"><span data-feather="minus-circle"></span> Unfollow</a></td>
                                     <td><a href="/institution/{{ @item.id }}">{{ @item.name }}</a></td>
                                     <td><a href="/bycountry/{{ @item.country }}?qty=10&since=0"><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></a></td>
-                                    <td><a href="/content/{{ @item.id }}">0 items</a></td>
-                                    <td><a href="/community/{{ @item.id }}">0 messages</a></td>
+                                    <td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td>
+                                    <td><a href="/community/{{ @item.id }}?qty=10&since=0">Topics</a></td>
                                 </tr>
                             </repeat>
                         </tbody>
@@ -185,6 +185,7 @@
                                         
                                         var marker1 = L.marker([{{ @item.latitude }}, {{ @item.longitude }}]).addTo(mymap).bindPopup('{{ @item.name }}');
                                     </script>    
+                                    
                             </div>
                             <div class="col-7">
                                 <table class="table table-striped">
@@ -243,7 +244,10 @@
             </check>
             
             <check if="{{ @page=='content' }}">
-                <h4>Content</h4>
+                <p><a href="javascript:history.back()">Back</a></p>
+                <repeat group="{{ @res_content }}" value="{{ @item }}">
+                <h4>Content of {{ @item.name }}</h4>
+                </repeat>
                 <div class="table-responsive">
                     
                     <table class="table table-striped">
@@ -260,7 +264,7 @@
                                 <tr>
                                     <td>{{ @item.title }}</td>
                                     <td>{{ @item.creator }}</td>
-                                    <td>{{ @item.date }}<td>
+                                    <td>{{ @item.date }}</td>
                                     <td>{{ @item.subject }}</td>
                                 </tr>
                             </repeat>
@@ -269,6 +273,110 @@
                     
                     <check if="{{ @contagem==0 }}">
                         No records were found.
+                    </check>
+                    <check if="{{ @contagem>0 }}">
+                        <check if="{{ @GET.since>0 }}">
+                          <a href="/content/{{ @PARAMS.id }}?since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
+                        </check>
+                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} of {{ @contagem }}
+                        <check if="{{ @contagem>@GET.qty+@GET.since }}">
+                          <a href="/content/{{ @PARAMS.id }}?since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
+                        </check>
+                    </check>
+                    
+                </div>
+            </check>
+            
+            <check if="{{ @page=='community' }}">
+                <p><a href="javascript:history.back()">Back</a></p>
+                <repeat group="{{ @res_community }}" value="{{ @item }}">
+                <h4>Community of {{ @item.instname }}</h4>
+                </repeat>
+                <div class="table-responsive">
+                    <p>
+                        <a class="btn btn-primary btn-sm" href="/create_post_community/{{ @item.id }}" role="button">Post a new topic</a>
+                    </p>
+                    <table class="table table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Title</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Created by</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <repeat group="{{ @res_community }}" value="{{ @item }}">
+                                <tr>
+                                    <td><a href="/community_post/{{ @item.id }}?qty=10&since=0">{{ @item.title }}</a></td>
+                                    <td>{{ @item.datetime }}</td>
+                                    <td><a href="/mapper/{{ @item.iduser }}">{{ @item.name }}</a></td>
+                                </tr>
+                            </repeat>
+                        </tbody>
+                    </table>
+                    
+                    <check if="{{ @contagem==0 }}">
+                        No records were found.
+                    </check>
+                    <check if="{{ @contagem>0 }}">
+                        <check if="{{ @GET.since>0 }}">
+                          <a href="/content/{{ @PARAMS.id }}?since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
+                        </check>
+                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} of {{ @contagem }}
+                        <check if="{{ @contagem>@GET.qty+@GET.since }}">
+                          <a href="/content/{{ @PARAMS.id }}?since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
+                        </check>
+                    </check>
+                    
+                </div>
+            </check>
+            
+            <check if="{{ @page=='community_post' }}">
+                <p><a href="javascript:history.back()">Back</a></p>
+                <repeat group="{{ @res_community_post }}" value="{{ @item }}">
+                <h4></h4>
+                </repeat>
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered">
+                        <tbody>
+                            <repeat group="{{ @res_community_post }}" value="{{ @item }}">
+                                <tr>
+                                    <td>
+                                        <strong>{{ @item.title }}</strong><br>
+                                        <small>Related to <a href="/institution/{{ @item.instid }}">{{ @item.instname }}</a> and created by <a href="/mapper/{{ @item.iduser }}">{{ @item.name }}</a> in {{ @item.datetime }}</small>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                    <i>Original message:</i>
+                                    <p><br>{{ @item.body }}</p>
+                                    </td>
+                                </tr>
+                            </repeat>
+                        </tbody>
+                    </table>
+                    <p>
+                        <a class="btn btn-primary btn-sm" href="/reply_post_community/{{ @item.id }}" role="button">Post a reply</a>
+                    </p>
+                    <repeat group="{{ @res_community_post_replies }}" value="{{ @item }}">
+                        <table class="table table-striped table-bordered">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <small>Reply by <a href="/mapper/{{ @item.iduser }}">{{ @item.name }}</a> in {{ @item.datetime }}</small>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <p>{{ @item.body }}</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </repeat>
+                    
+                    <check if="{{ @contagem==0 }}">
+                        No replies were found.
                     </check>
                     <check if="{{ @contagem>0 }}">
                         <check if="{{ @GET.since>0 }}">
@@ -369,8 +477,8 @@
                                 <tr>
                                     <td><a href="/institution/{{ @item.id }}">{{ @item.name }}</a></td>
                                     <td><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></td>
-                                    <td><a href="/content/{{ @item.id }}">0 items</a></td>
-                                    <td><a href="/community/{{ @item.id }}">0 messages</a></td>
+                                    <td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td>
+                                    <td><a href="/community/{{ @item.id }}?qty=10&since=0">Forum</a></td>
                                 </tr>
                             </repeat>
                         </tbody>

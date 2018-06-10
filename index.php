@@ -437,9 +437,10 @@ $f3->route('GET /dashboard',
         // Verify if is logged
         if(!$f3->get('SESSION.logged')){ $f3->reroute('/'); }
      
+        // List Intitutions
         $f3->set('res_institutions', $f3->get('db')->exec(
             'SELECT Institutions.id, Institutions.name, Institutions.country, Users_Institutions.id AS iduserinst FROM Institutions ' .
-            'LEFT JOIN Users_Institutions ON Users_Institutions.idinstitution = Institutions.id ' . ' ' .
+            'LEFT JOIN Users_Institutions ON Users_Institutions.idinstitution = Institutions.id ' .
             'AND Users_Institutions.iduser = ' . $f3->get('SESSION.id')[0]['id'] . ' ' .
             'LIMIT :limit OFFSET :offset',
             array(
@@ -451,6 +452,8 @@ $f3->route('GET /dashboard',
         // Count
         $f3->get('db')->exec('SELECT id FROM Institutions');
         $f3->set('contagem', $f3->get('db')->count());
+        
+        // Count content from each institutions
         
         echo \Template::instance()->render('templates/dashboard.html');
     }
@@ -516,7 +519,7 @@ $f3->route('GET /mapper/@id',
         $f3->set('res_user', $f3->get('db')->exec(
             'SELECT Users.id, Users.name, Profiles.* FROM Users ' .
             'LEFT JOIN Profiles ON Profiles.iduser = Users.id ' .
-            'WHERE Users.id = )', $f3->get('PARAMS.id')
+            'WHERE Users.id = ?', $f3->get('PARAMS.id')
         )); 
 
         $f3->set('awm_score', Score::calc($f3->get('db'), $f3->get('PARAMS.id')));
@@ -723,28 +726,106 @@ $f3->route('GET /content/@id',
         $f3->set('page','content');
         
         // Verify if is logged
-        if(!$f3->get('SESSION.logged')){ $f3->reroute('/'); }
+        if(!$f3->get('SESSION.logged')){ $f3->reroute('/login'); }
         
         // Get Content
         $f3->set('res_content', $f3->get('db')->exec(
-                'SELECT Content_Institutions.id AS idci, Content.* FROM Content_Institutions ' .
-                'RIGHT JOIN Content_Institutions ON Content_Institutions.idcontent = Content.id ' .
-                'WHERE Content_Institutions.idinstitution = :idinst ' .
+                'SELECT ' . 
+                'Institutions.name, Content_Institutions.idinstitution, Content_Institutions.id AS idci, Content.* ' .
+                'FROM Content_Institutions ' .
+                'INNER JOIN Content ON Content.id = Content_Institutions.idcontent ' .
+                'INNER JOIN Institutions ON Institutions.id = Content_Institutions.idinstitution ' .
                 'LIMIT :qty OFFSET :since',
             array(
-                ':idinst'=>(int)$f3->get('PARAMS.id'),
                 ':qty'=>(int)$f3->get('GET.qty'),
                 ':since'=>(int)$f3->get('GET.since')
             )
         )); 
-        die(var_dump($f3->get('res_content')));
 
+        // Count
+        $f3->get('db')->exec(
+            'SELECT Content_Institutions.idinstitution, Content_Institutions.id AS idci, Content.* FROM Content_Institutions ' .
+            'INNER JOIN Content ON Content.id = Content_Institutions.idcontent ' .
+            'INNER JOIN Institutions ON Institutions.id = Content_Institutions.idinstitution'
+        ); 
+        $f3->set('contagem', $f3->get('db')->count());
+        
+        echo \Template::instance()->render('templates/dashboard.html');
+    }
+);
+
+$f3->route('GET /community/@id',
+    function($f3) {
+        $f3->set('page','community');
+        
+        // Verify if is logged
+        if(!$f3->get('SESSION.logged')){ $f3->reroute('/login'); }
+        
+        // Get Topics
+        $f3->set('res_community', $f3->get('db')->exec(
+                'SELECT Community.id, Community.title, Community.datetime, Users.id as iduser, Users.name, Institutions.name as instname FROM Community ' .
+                'INNER JOIN Users ON Users.id = Community.iduser ' .
+                'INNER JOIN Institutions ON Institutions.id = Community.idinstitution ' .
+                'WHERE idinstitution = :institution AND Community.parent_id IS NULL ' .
+                'LIMIT :qty OFFSET :since',
+            array(
+                ':institution'=>$f3->get('PARAMS.id'),
+                ':qty'=>(int)$f3->get('GET.qty'),
+                ':since'=>(int)$f3->get('GET.since')
+            )
+        ));
+
+        // Count
+        $f3->get('db')->exec(
+                'SELECT Community.id, Community.datetime, Users.name, Institutions.name as instname FROM Community ' .
+                'INNER JOIN Users ON Users.id = Community.iduser ' .
+                'INNER JOIN Institutions ON Institutions.id = Community.idinstitution ' .
+                'WHERE idinstitution = ? AND Community.parent_id IS NULL', $f3->get('PARAMS.id')
+        ); 
+        $f3->set('contagem', $f3->get('db')->count());
+        
+        echo \Template::instance()->render('templates/dashboard.html');
+    }
+);
+
+$f3->route('GET /community_post/@id',
+    function($f3) {
+        $f3->set('page','community_post');
+        
+        // Verify if is logged
+        if(!$f3->get('SESSION.logged')){ $f3->reroute('/login'); }
+        
+        // Get Topics
+        $f3->set('res_community_post', $f3->get('db')->exec(
+                'SELECT Users.id AS iduser, Users.id AS iduser, Users.name, Institutions.name AS instname, Institutions.id AS instid, Community.* FROM Community ' .
+                'INNER JOIN Users ON Users.id = Community.iduser ' .
+                'INNER JOIN Institutions ON Institutions.id = Community.idinstitution ' .
+                'WHERE Community.id = :post ',
+            array(
+                ':post'=>$f3->get('PARAMS.id')
+            )
+        ));
+        
+        // GET REPLIES from TOPIC
+        $f3->set('res_community_post_replies', $f3->get('db')->exec(
+            'SELECT Users.id AS iduser, Users.id AS iduser, Users.name, Institutions.name AS instname, Institutions.id AS instid, Community.* FROM Community ' .
+            'INNER JOIN Users ON Users.id = Community.iduser ' .
+            'INNER JOIN Institutions ON Institutions.id = Community.idinstitution ' .
+            'WHERE Community.parent_id = :post ' .
+            'LIMIT :qty OFFSET :since',
+            array(
+                ':post'=>$f3->get('PARAMS.id'),
+                ':qty'=>(int)$f3->get('GET.qty'),
+                ':since'=>(int)$f3->get('GET.since')
+            )
+        ));
         
         // Count
         $f3->get('db')->exec(
-            'SELECT Institutions.id, Content.* FROM Content_Institutions ' .
-            'INNER JOIN Institutions ON Institutions.id = Content_Institutions.idinstitution ' .
-            'INNER JOIN Content ON Content.id = Content_Institutions.idcontent '
+            'SELECT Users.id AS iduser, Users.id AS iduser, Users.name, Institutions.name AS instname, Institutions.id AS instid, Community.* FROM Community ' .
+            'INNER JOIN Users ON Users.id = Community.iduser ' .
+            'INNER JOIN Institutions ON Institutions.id = Community.idinstitution ' .
+            'WHERE Community.parent_id = ?', $f3->get('PARAMS.id')
         ); 
         $f3->set('contagem', $f3->get('db')->count());
         
@@ -861,4 +942,5 @@ $f3->route('GET /migra_rel_user_inst',
     }
 );
 */
+
 $f3->run();

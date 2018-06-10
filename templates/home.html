@@ -560,7 +560,12 @@
                                 }).addTo(mymap);
                                 
                                 var marker1 = L.marker([{{ @item.latitude }}, {{ @item.longitude }}]).addTo(mymap).bindPopup('{{ @item.name }}');
-                            </script>    
+                            </script>
+                            <br>
+                            <p class="text-center">
+                                <a class="btn btn-primary" href="/content/{{ @item.id }}?qty=10&since=0" role="button">Repository</a>
+                                <a class="btn btn-primary" href="/community/{{ @item.id }}?qty=10&since=0" role="button">Forum</a>
+                            </p>
                         </div>
                         <div class="col-7">
                             <table class="table table-striped">
@@ -582,7 +587,7 @@
                                             <td><strong>Latitude</strong></td>
                                             <check if="{{ @SESSION.logged=='yes' }}">
                                                 <true>
-                                                    <td><small>{{ @item.latitude }}</small></td>
+                                                    <td>{{ @item.latitude }}</td>
                                                 </true>
                                                 <false>
                                                     <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
@@ -593,7 +598,7 @@
                                             <td><strong>Longitude</strong></td>
                                             <check if="{{ @SESSION.logged=='yes' }}">
                                                 <true>
-                                                    <td><small>{{ @item.longitude }}</small></td>
+                                                    <td>{{ @item.longitude }}</td>
                                                 </true>
                                                 <false>
                                                     <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
@@ -604,7 +609,7 @@
                                             <td><strong>Address</strong></td>
                                             <check if="{{ @SESSION.logged=='yes' }}">
                                                 <true>
-                                                    <td><small>{{ @item.address }}</small></td>
+                                                    <td>{{ @item.address }}</td>
                                                 </true>
                                                 <false>
                                                     <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
@@ -615,7 +620,7 @@
                                             <td><strong>City, State/District</strong></td>
                                             <check if="{{ @SESSION.logged=='yes' }}">
                                                 <true>
-                                                    <td><small>{{ @item.city }}, {{ @item.district }}</small></td>
+                                                    <td>{{ @item.city }}, {{ @item.district }}</td>
                                                 </true>
                                                 <false>
                                                     <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
@@ -626,7 +631,7 @@
                                             <td><strong>Email</strong></td>
                                             <check if="{{ @SESSION.logged=='yes' }}">
                                                 <true>
-                                                    <td><small>{{ @item.email }}</small></td>
+                                                    <td>{{ @item.email }}</td>
                                                 </true>
                                                 <false>
                                                     <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
@@ -637,7 +642,7 @@
                                             <td><strong>Mapper</strong></td>
                                             <check if="{{ @SESSION.logged=='yes' }}">
                                                 <true>
-                                                    <td><small>{{ @item.collaborator_name }}</small></td>
+                                                    <td><a href="/mapper/{{ @item.iduser }}">{{ @item.collaborator_name }}</a></td>
                                                 </true>
                                                 <false>
                                                     <td><small>Please, <a href="/login">log in</a> to see this data</small></td>
@@ -682,8 +687,8 @@
                             <tr>
                                 <td><a href="/info/{{ @item.id }}">{{ @item.name }}</a></td>
                                 <td><a href="/bycountry/{{ @item.country }}?qty=10&since=0"><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></a></td>
-                                <td><a href="/content/{{ @item.id }}">0 items</a></td>
-                                <td><a href="/community/{{ @item.id }}">0 messages</a></td>
+                                <td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td>
+                                <td><a href="/community/{{ @item.id }}?qty=10&since=0">Forum</a></td>
                             </tr>
                         </repeat>
                     </tbody>
@@ -733,8 +738,8 @@
                             <tr>
                                 <td><a href="/info/{{ @item.id }}">{{ @item.name }}</a></td>
                                 <td><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></td>
-                                <td><a href="/content/{{ @item.id }}">0 items</a></td>
-                                <td><a href="/community/{{ @item.id }}">0 messages</a></td>
+                                <td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td>
+                                <td><a href="/community/{{ @item.id }}?qty=10&since=0">Forum</a></td>
                             </tr>
                         </repeat>
                     </tbody>
