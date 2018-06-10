@@ -19,7 +19,7 @@ require('config.php');
 
 // Fat-free vars
 $f3->set('TEMP', $f3->get('AWM_TEMP_DIR'));
-$f3->set('DEBUG', 3); // 0 = production; 3 = debug mode
+$f3->set('DEBUG', 0); // 0 = production; 3 = debug mode
 $f3->set('CACHE', 'memcached=localhost:11211');
 $f3->set('TZ', 'America/Bahia');
 $f3->set('LOCALES', 'dict/');
@@ -47,7 +47,7 @@ $f3->set('db', new DB\SQL(
 ));
  
 // SESSION
-ini_set('session.gc_maxlifetime', 10800);
+ini_set('session.gc_maxlifetime', 5800);
 new \DB\SQL\Session($f3->get('db'));
  
 // ======================
@@ -451,7 +451,7 @@ $f3->route('GET /dashboard',
         
         // Count
         $f3->get('db')->exec('SELECT id FROM Institutions');
-        $f3->set('contagem', $f3->get('db')->count());
+        $f3->set('count', $f3->get('db')->count());
         
         // Count content from each institutions
         
@@ -486,7 +486,7 @@ $f3->route('GET /myinstitutions',
             'INNER JOIN Users ON Users_Institutions.iduser = Users.id ' .
             'WHERE iduser = ' . $f3->get('SESSION.id')[0]['id']
         );
-        $f3->set('contagem', $f3->get('db')->count());
+        $f3->set('count', $f3->get('db')->count());
 
         echo \Template::instance()->render('templates/dashboard.html');
     }
@@ -685,7 +685,7 @@ $f3->route('GET /q',
             'SELECT id, name, country FROM Institutions ' .
             'WHERE name LIKE ?', '%'.$f3->get('GET.search').'%'
         );
-        $f3->set('contagem', $f3->get('db')->count());
+        $f3->set('count', $f3->get('db')->count());
     
         echo \Template::instance()->render('templates/home.html');
     }
@@ -711,7 +711,7 @@ $f3->route('GET /bycountry/@country',
             'SELECT id FROM Institutions ' .
             'WHERE country = ?', $f3->get('PARAMS.country')
         );
-        $f3->set('contagem', $f3->get('db')->count());
+        $f3->set('count', $f3->get('db')->count());
         
         if($f3->get('SESSION.logged') == 'yes'){
             echo \Template::instance()->render('templates/dashboard.html');
@@ -748,7 +748,7 @@ $f3->route('GET /content/@id',
             'INNER JOIN Content ON Content.id = Content_Institutions.idcontent ' .
             'INNER JOIN Institutions ON Institutions.id = Content_Institutions.idinstitution'
         ); 
-        $f3->set('contagem', $f3->get('db')->count());
+        $f3->set('count', $f3->get('db')->count());
         
         echo \Template::instance()->render('templates/dashboard.html');
     }
@@ -782,7 +782,7 @@ $f3->route('GET /community/@id',
                 'INNER JOIN Institutions ON Institutions.id = Community.idinstitution ' .
                 'WHERE idinstitution = ? AND Community.parent_id IS NULL', $f3->get('PARAMS.id')
         ); 
-        $f3->set('contagem', $f3->get('db')->count());
+        $f3->set('count', $f3->get('db')->count());
         
         echo \Template::instance()->render('templates/dashboard.html');
     }
@@ -827,7 +827,7 @@ $f3->route('GET /community_post/@id',
             'INNER JOIN Institutions ON Institutions.id = Community.idinstitution ' .
             'WHERE Community.parent_id = ?', $f3->get('PARAMS.id')
         ); 
-        $f3->set('contagem', $f3->get('db')->count());
+        $f3->set('count', $f3->get('db')->count());
         
         echo \Template::instance()->render('templates/dashboard.html');
     }

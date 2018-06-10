@@ -106,15 +106,15 @@
                         </tbody>
                     </table>
                     
-                    <check if="{{ @contagem==0 }}">
+                    <check if="{{ @count==0 }}">
                         No records were found.
                     </check>
-                    <check if="{{ @contagem>0 }}">
+                    <check if="{{ @count>0 }}">
                         <check if="{{ @GET.since>0 }}">
                           <a href="/dashboard?since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
                         </check>
-                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} of {{ @contagem }}
-                        <check if="{{ @contagem>@GET.qty+@GET.since }}">
+                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} of {{ @count }}
+                        <check if="{{ @count>@GET.qty+@GET.since }}">
                           <a href="/dashboard?since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
                         </check>
                     </check>
@@ -148,15 +148,15 @@
                         </tbody>
                     </table>
                     
-                    <check if="{{ @contagem==0 }}">
+                    <check if="{{ @count==0 }}">
                         No records were found.
                     </check>
-                    <check if="{{ @contagem>0 }}">
+                    <check if="{{ @count>0 }}">
                         <check if="{{ @GET.since>0 }}">
                           <a href="/myinstitutions?since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
                         </check>
-                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} of {{ @contagem }}
-                        <check if="{{ @contagem>@GET.qty+@GET.since }}">
+                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} of {{ @count }}
+                        <check if="{{ @count>@GET.qty+@GET.since }}">
                           <a href="/myinstitutions?since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
                         </check>
                     </check>
@@ -185,7 +185,11 @@
                                         
                                         var marker1 = L.marker([{{ @item.latitude }}, {{ @item.longitude }}]).addTo(mymap).bindPopup('{{ @item.name }}');
                                     </script>    
-                                    
+                                    <br>
+                                    <p class="text-center">
+                                        <a class="btn btn-primary" href="/content/{{ @item.id }}?qty=10&since=0" role="button">Content</a>
+                                        <a class="btn btn-primary" href="/community/{{ @item.id }}?qty=10&since=0" role="button">Community</a>
+                                    </p>
                             </div>
                             <div class="col-7">
                                 <table class="table table-striped">
@@ -271,15 +275,15 @@
                         </tbody>
                     </table>
                     
-                    <check if="{{ @contagem==0 }}">
+                    <check if="{{ @count==0 }}">
                         No records were found.
                     </check>
-                    <check if="{{ @contagem>0 }}">
+                    <check if="{{ @count>0 }}">
                         <check if="{{ @GET.since>0 }}">
                           <a href="/content/{{ @PARAMS.id }}?since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
                         </check>
-                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} of {{ @contagem }}
-                        <check if="{{ @contagem>@GET.qty+@GET.since }}">
+                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} of {{ @count }}
+                        <check if="{{ @count>@GET.qty+@GET.since }}">
                           <a href="/content/{{ @PARAMS.id }}?since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
                         </check>
                     </check>
@@ -315,15 +319,15 @@
                         </tbody>
                     </table>
                     
-                    <check if="{{ @contagem==0 }}">
+                    <check if="{{ @count==0 }}">
                         No records were found.
                     </check>
-                    <check if="{{ @contagem>0 }}">
+                    <check if="{{ @count>0 }}">
                         <check if="{{ @GET.since>0 }}">
                           <a href="/content/{{ @PARAMS.id }}?since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
                         </check>
-                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} of {{ @contagem }}
-                        <check if="{{ @contagem>@GET.qty+@GET.since }}">
+                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} of {{ @count }}
+                        <check if="{{ @count>@GET.qty+@GET.since }}">
                           <a href="/content/{{ @PARAMS.id }}?since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
                         </check>
                     </check>
@@ -375,15 +379,15 @@
                         </table>
                     </repeat>
                     
-                    <check if="{{ @contagem==0 }}">
+                    <check if="{{ @count==0 }}">
                         No replies were found.
                     </check>
-                    <check if="{{ @contagem>0 }}">
+                    <check if="{{ @count>0 }}">
                         <check if="{{ @GET.since>0 }}">
                           <a href="/content/{{ @PARAMS.id }}?since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
                         </check>
-                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} of {{ @contagem }}
-                        <check if="{{ @contagem>@GET.qty+@GET.since }}">
+                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} of {{ @count }}
+                        <check if="{{ @count>@GET.qty+@GET.since }}">
                           <a href="/content/{{ @PARAMS.id }}?since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
                         </check>
                     </check>
@@ -484,15 +488,15 @@
                         </tbody>
                     </table>
                     
-                    <check if="{{ @contagem==0 }}">
+                    <check if="{{ @count==0 }}">
                         No records were found.
                     </check>
-                    <check if="{{ @contagem>0 }}">
+                    <check if="{{ @count>0 }}">
                         <check if="{{ @GET.since>0 }}">
                           <a href="/q?search={{ @GET.search }}&since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
                         </check>
-                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} ({{ @contagem }} items found)
-                        <check if="{{ @contagem>@GET.qty+@GET.since }}">
+                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} ({{ @count }} items found)
+                        <check if="{{ @count>@GET.qty+@GET.since }}">
                           <a href="/q?search={{ @GET.search }}&since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
                         </check>
                     </check>
