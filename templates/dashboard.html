@@ -74,7 +74,34 @@
             </div>
             
             <check if="{{ @page=='dashboard' }}">
-                <h4>Institutions</h4>
+            
+                <h4>Last Threads</h4>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Institution</th>
+                                <th scope="col">Title</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Created by</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <repeat group="{{ @res_community_post }}" value="{{ @item }}">
+                                <tr>
+                                    <td>{{ @item.instname }}</td>
+                                    <td><a href="/community_post/{{ @item.id }}?qty=10&since=0">{{ @item.title }}</a></td>
+                                    <td>{{ @item.datetime }}</td>
+                                    <td><a href="/mapper/{{ @item.iduser }}">{{ @item.name }}</a></td>
+                                </tr>
+                            </repeat>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <p>
+                
+                <h4 id="institutions">Institutions</h4>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead class="thead-dark">
@@ -82,8 +109,8 @@
                                 <th scope="col">My Institutions</th>
                                 <th scope="col">Institution</th>
                                 <th scope="col">Country</th>
-                                <th scope="col">Content</th>
-                                <th scope="col">Community</th>
+                                <exclude><th scope="col">Content</th></exclude>
+                               <th scope="col">Community</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -99,7 +126,7 @@
                                     </check>
                                     <td><a href="/institution/{{ @item.id }}">{{ @item.name }}</a></td>
                                     <td><a href="/bycountry/{{ @item.country }}?qty=10&since=0"><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></a></td>
-                                    <td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td>
+                                    <exclude><exclude><exclude><td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td></exclude></exclude></exclude>
                                     <td><a href="/community/{{ @item.id }}?qty=10&since=0">Forum</a></td>
                                 </tr>
                             </repeat>
@@ -111,14 +138,15 @@
                     </check>
                     <check if="{{ @count>0 }}">
                         <check if="{{ @GET.since>0 }}">
-                          <a href="/dashboard?since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
+                          <a href="/dashboard?since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}#institutions">Previous</a>
                         </check>
                           {{ @GET.since }} to {{ @GET.qty+@GET.since }} of {{ @count }}
                         <check if="{{ @count>@GET.qty+@GET.since }}">
-                          <a href="/dashboard?since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
+                          <a href="/dashboard?since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}#institutions">Next</a>
                         </check>
                     </check>
                 </div>
+                <p>
             </check>
             
             <check if="{{ @page=='myinstitutions' }}">
@@ -131,7 +159,7 @@
                                 <th scope="col">My Institution</th>
                                 <th scope="col">Institution</th>
                                 <th scope="col">Country</th>
-                                <th scope="col">Content</th>
+                                <exclude><th scope="col">Content</th></exclude>
                                 <th scope="col">Community</th>
                             </tr>
                         </thead>
@@ -141,8 +169,8 @@
                                     <td><a href="/removefrommyinstitutions/{{ @item.id }}"><span data-feather="minus-circle"></span> Unfollow</a></td>
                                     <td><a href="/institution/{{ @item.id }}">{{ @item.name }}</a></td>
                                     <td><a href="/bycountry/{{ @item.country }}?qty=10&since=0"><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></a></td>
-                                    <td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td>
-                                    <td><a href="/community/{{ @item.id }}?qty=10&since=0">Topics</a></td>
+                                    <exclude><td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td></exclude>
+                                    <td><a href="/community/{{ @item.id }}?qty=10&since=0">Forum</a></td>
                                 </tr>
                             </repeat>
                         </tbody>
@@ -187,7 +215,7 @@
                                     </script>    
                                     <br>
                                     <p class="text-center">
-                                        <a class="btn btn-primary" href="/content/{{ @item.id }}?qty=10&since=0" role="button">Content</a>
+                                        <exclude><a class="btn btn-primary" href="/content/{{ @item.id }}?qty=10&since=0" role="button">Content</a></exclude>
                                         <a class="btn btn-primary" href="/community/{{ @item.id }}?qty=10&since=0" role="button">Community</a>
                                     </p>
                             </div>
@@ -197,47 +225,47 @@
                                         <tr>
                                             <td><strong>Name</strong></td>
                                             <td>{{ @item.name }}</td>
-                                            <td>Edit</td>
+                                            <td><a href="#" data-toggle="popover" title="How to help us to fix this data" data-trigger="focus" data-content="We will let you help us to fix bad data soon.">Edit</a></td>
                                         </tr>
                                         <tr>
                                             <td><strong>URL</strong></td>
                                             <td><a href="{{ @item.url }}" target="_blank">{{ @item.url }}</td>
-                                            <td>Edit</td>
+                                            <td><a href="#" data-toggle="popover" title="How to help us to fix this data" data-trigger="focus" data-content="We will let you help us to fix bad data soon.">Edit</a></td>
                                         </tr>
                                         <tr>
                                             <td><strong>Country</strong></td>
-                                            <td>{{ @item.country }}</td>
-                                            <td>Edit</td>
+                                            <td><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></td>
+                                            <td><a href="#" data-toggle="popover" title="How to help us to fix this data" data-trigger="focus" data-content="We will let you help us to fix bad data soon.">Edit</a></td>
                                         </tr>
                                         <tr>
                                             <td><strong>Latitude</strong></td>
                                             <td>{{ @item.latitude }}</td>
-                                            <td>Edit</td>
+                                            <td><a href="#" data-toggle="popover" title="How to help us to fix this data" data-trigger="focus" data-content="We will let you help us to fix bad data soon.">Edit</a></td>
                                         </tr>
                                         <tr>
                                             <td><strong>Longitude</strong></td>
                                             <td>{{ @item.longitude }}</td>
-                                            <td>Edit</td>
+                                            <td><a href="#" data-toggle="popover" title="How to help us to fix this data" data-trigger="focus" data-content="We will let you help us to fix bad data soon.">Edit</a></td>
                                         </tr>
                                         <tr>
                                             <td><strong>Address</strong></td>
                                             <td>{{ @item.address }}</td>
-                                            <td>Edit</td>
+                                            <td><a href="#" data-toggle="popover" title="How to help us to fix this data" data-trigger="focus" data-content="We will let you help us to fix bad data soon.">Edit</a></td>
                                         </tr>
                                         <tr>
                                             <td><strong>City, State/District</strong></td>
                                             <td>{{ @item.city }}, {{ @item.district }}</td>
-                                            <td>Edit</td>
+                                            <td><a href="#" data-toggle="popover" title="How to help us to fix this data" data-trigger="focus" data-content="We will let you help us to fix bad data soon.">Edit</a></td>
                                         </tr>
                                         <tr>
                                             <td><strong>Email</strong></td>
                                             <td>{{ @item.email }}</td>
-                                            <td>Edit</td>
+                                            <td><a href="#" data-toggle="popover" title="How to help us to fix this data" data-trigger="focus" data-content="We will let you help us to fix bad data soon.">Edit</a></td>
                                         </tr>
                                         <tr>
                                             <td><strong>Mapper</strong></td>
                                             <td><a href="/mapper/{{ @item.iduser }}">{{ @item.collaborator_name }}</a></td>
-                                            <td>What is a Mapper?</td>
+                                            <td><a href="#" data-toggle="popover" title="What is a Mapper" data-trigger="focus" data-content="Mappers are the users of Archives World Map.">What is a Mapper?</a></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -293,8 +321,8 @@
             
             <check if="{{ @page=='community' }}">
                 <p><a href="javascript:history.back()">Back</a></p>
-                <repeat group="{{ @res_community }}" value="{{ @item }}">
-                <h4>Community of {{ @item.instname }}</h4>
+                <repeat group="{{ @res_institution }}" value="{{ @item }}">
+                <h4>Community of {{ @item.name }}</h4>
                 </repeat>
                 <div class="table-responsive">
                     <p>
@@ -367,7 +395,7 @@
                             <tbody>
                                 <tr>
                                     <td>
-                                        <small>Reply by <a href="/mapper/{{ @item.iduser }}">{{ @item.name }}</a> in {{ @item.datetime }}</small>
+                                        <small>Replied by <a href="/mapper/{{ @item.iduser }}">{{ @item.name }}</a> in {{ @item.datetime }}</small>
                                     </td>
                                 </tr>
                                 <tr>
@@ -453,7 +481,7 @@
                                         <tr>
                                             <td><strong>AWM Score</strong></td>
                                             <td>{{ @awm_score }}</td>
-                                            <td>What is this?</td>
+                                            <td><a href="#" data-toggle="popover" title="What is a AWM Score?" data-trigger="focus" data-content="This is the Score of each user in our platform. Send us new institutions location or participate in our forums to increase your score.">What is this?</a></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -472,7 +500,7 @@
                             <tr>
                                 <th scope="col">Institution</th>
                                 <th scope="col">Country</th>
-                                <th scope="col">Content</th>
+                                <exclude><th scope="col">Content</th></exclude>
                                 <th scope="col">Community</th>
                             </tr>
                         </thead>
@@ -481,7 +509,7 @@
                                 <tr>
                                     <td><a href="/institution/{{ @item.id }}">{{ @item.name }}</a></td>
                                     <td><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></td>
-                                    <td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td>
+                                    <exclude><td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td></exclude>
                                     <td><a href="/community/{{ @item.id }}?qty=10&since=0">Forum</a></td>
                                 </tr>
                             </repeat>
@@ -568,7 +596,7 @@
                                         <tr>
                                             <td><strong>AWM Score</strong></td>
                                             <td>{{ @awm_score }}</td>
-                                            <td>What is this?</td>
+                                            <td><a href="#" data-toggle="popover" title="What is a AWM Score?" data-trigger="focus" data-content="This is the Score of each user in our platform. Send us new institutions location or participate in our forums to increase your score.">What is this?</a></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -913,6 +941,66 @@
                 </repeat>
             </check>
             
+            <check if="{{ @page=='create_post_community' }}">
+                <repeat group="{{ @res_institution }}" value="{{ @item }}">
+                    <a href="javascript:history.back()">Back</a><br>
+                    <div class="container">
+                        <br>
+                        <h4>Post a new topic for <strong>{{ @item.name }}</strong> community</h4><br>
+                        <div class="row">
+                            <div class="col">
+                                <form action="/proc-create_post_community/{{ @item.id }}" method="POST">
+                                <table class="table table-striped">
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Subject </strong></td>
+                                            <td><input class="form-control" type="text" name="title" id="title" required></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Message</strong></td>
+                                            <td><textarea class="form-control" name="body" id="body" rows="3" required></textarea></td>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td><button type="submit" class="btn btn-primary">Submit</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </repeat>
+            </check>
+            
+            <check if="{{ @page=='reply_post_community' }}">
+                <repeat group="{{ @res_institution }}" value="{{ @item }}">
+                    <a href="javascript:history.back()">Back</a><br>
+                    <div class="container">
+                        <br>
+                        <repeat group="{{ @res_community }}" value="{{ @item }}">
+                        <h4>Post a reply for <i>{{ @item.title }}</i></h4><br>
+                        </repeat>
+                        <div class="row">
+                            <div class="col">
+                                <form action="/proc-reply_post_community/{{ @item.id }}" method="POST">
+                                <table class="table table-striped">
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Message</strong></td>
+                                            <td><textarea class="form-control" name="body" id="body" rows="3" required></textarea></td>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td><button type="submit" class="btn btn-primary">Submit</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </repeat>
+            </check>
+            
         </main>
       </div>
     </div>
@@ -930,6 +1018,10 @@
     <script>
       feather.replace()
     </script>
-
+    <script>
+    $(function () {
+      $('[data-toggle="popover"]').popover()
+    })
+    </script>
   </body>
 </html>

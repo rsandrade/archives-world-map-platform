@@ -61,11 +61,11 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ @dict_Languages }}</a>
                     <div class="dropdown-menu" aria-labelledby="dropdown01">
-                        <a class="dropdown-item" href="?language=en-US">English</a>
-                        <a class="dropdown-item" href="?language=es">Español</a>
-                        <a class="dropdown-item" href="?language=pt-BR">Português</a>
-                        <a class="dropdown-item" href="?language=cn">中文</a>
-                        <a class="dropdown-item" href="?language=pl">Polski</a>
+                        <a class="dropdown-item" href="/?language=en-US">English</a>
+                        <a class="dropdown-item" href="/?language=es">Español</a>
+                        <a class="dropdown-item" href="/?language=pt-BR">Português</a>
+                        <a class="dropdown-item" href="/?language=cn">中文</a>
+                        <a class="dropdown-item" href="/?language=pl">Polski</a>
                     </div>
                 </li>
                 <check if="{{ @SESSION.logged!='yes' }}">
@@ -504,9 +504,10 @@
                 {{ @dict_textabout | raw }}
             </div>
             
-            <div style="text-align: left;"><br><!--
-                BTC: 17nR36GgNHr8jciFwTrBxqq97xmdoMakKa<br>
-                LTC: LUeRE1BCAftPb2NGJyfy5bSXtmUXbEfHS7<br>--> 
+            <div style="text-align: left;">
+                <br>
+                <img src="/templates/img/awmbtc.png" height="150px"><br>
+                3LRTkXnFFUqQTmnmX83cfiuWN7H3WzTgcb<br>
             </div>
 
         </check>
@@ -572,7 +573,7 @@
                             </script>
                             <br>
                             <p class="text-center">
-                                <a class="btn btn-primary" href="/content/{{ @item.id }}?qty=10&since=0" role="button">Content</a>
+                                <exclude><a class="btn btn-primary" href="/content/{{ @item.id }}?qty=10&since=0" role="button">Content</a></exclude>
                                 <a class="btn btn-primary" href="/community/{{ @item.id }}?qty=10&since=0" role="button">Community</a>
                             </p>
                         </div>
@@ -687,7 +688,7 @@
                         <tr>
                             <th scope="col">Institution</th>
                             <th scope="col">Country</th>
-                            <th scope="col">Content</th>
+                            <exclude><th scope="col">Content</th></exclude>
                             <th scope="col">Community</th>
                         </tr>
                     </thead>
@@ -696,7 +697,7 @@
                             <tr>
                                 <td><a href="/info/{{ @item.id }}">{{ @item.name }}</a></td>
                                 <td><a href="/bycountry/{{ @item.country }}?qty=10&since=0"><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></a></td>
-                                <td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td>
+                                <exclude><td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td></exclude>
                                 <td><a href="/community/{{ @item.id }}?qty=10&since=0">Forum</a></td>
                             </tr>
                         </repeat>
@@ -738,7 +739,7 @@
                         <tr>
                             <th scope="col">Institution</th>
                             <th scope="col">Country</th>
-                            <th scope="col">Content</th>
+                            <exclude><th scope="col">Content</th></exclude>
                             <th scope="col">Community</th>
                         </tr>
                     </thead>
@@ -747,7 +748,7 @@
                             <tr>
                                 <td><a href="/info/{{ @item.id }}">{{ @item.name }}</a></td>
                                 <td><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></td>
-                                <td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td>
+                                <exclude><td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td></exclude>
                                 <td><a href="/community/{{ @item.id }}?qty=10&since=0">Forum</a></td>
                             </tr>
                         </repeat>

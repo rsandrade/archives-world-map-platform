@@ -48,7 +48,7 @@ $f3->set('db', new DB\SQL(
  
 // SESSION
 ini_set('session.gc_maxlifetime', 5800);
-new \DB\SQL\Session($f3->get('db'));
+//new \DB\SQL\Session($f3->get('db'));
  
 // ======================
 // App
@@ -437,6 +437,14 @@ $f3->route('GET /dashboard',
         // Verify if is logged
         if(!$f3->get('SESSION.logged')){ $f3->reroute('/'); }
      
+        // Get Topics
+        $f3->set('res_community_post', $f3->get('db')->exec(
+                'SELECT Users.id AS iduser, Users.id AS iduser, Users.name, Institutions.name AS instname, Institutions.id AS instid, Community.* FROM Community ' .
+                'INNER JOIN Users ON Users.id = Community.iduser ' .
+                'INNER JOIN Institutions ON Institutions.id = Community.idinstitution ' .
+                'LIMIT 10'
+        ));
+     
         // List Intitutions
         $f3->set('res_institutions', $f3->get('db')->exec(
             'SELECT Institutions.id, Institutions.name, Institutions.country, Users_Institutions.id AS iduserinst FROM Institutions ' .
@@ -454,6 +462,7 @@ $f3->route('GET /dashboard',
         $f3->set('count', $f3->get('db')->count());
         
         // Count content from each institutions
+        
         
         echo \Template::instance()->render('templates/dashboard.html');
     }
@@ -761,6 +770,12 @@ $f3->route('GET /community/@id',
         // Verify if is logged
         if(!$f3->get('SESSION.logged')){ $f3->reroute('/login'); }
         
+        // Name of Institution
+        $f3->set('res_institution', $f3->get('db')->exec(
+            'SELECT id, name FROM Institutions ' .
+            'WHERE id = ? ', $f3->get('PARAMS.id')
+        ));
+        
         // Get Topics
         $f3->set('res_community', $f3->get('db')->exec(
                 'SELECT Community.id, Community.title, Community.datetime, Users.id as iduser, Users.name, Institutions.name as instname FROM Community ' .
@@ -808,10 +823,9 @@ $f3->route('GET /community_post/@id',
         
         // GET REPLIES from TOPIC
         $f3->set('res_community_post_replies', $f3->get('db')->exec(
-            'SELECT Users.id AS iduser, Users.id AS iduser, Users.name, Institutions.name AS instname, Institutions.id AS instid, Community.* FROM Community ' .
+            'SELECT Users.id AS iduser, Users.id AS iduser, Users.name, Community.* FROM Community ' .
             'INNER JOIN Users ON Users.id = Community.iduser ' .
-            'INNER JOIN Institutions ON Institutions.id = Community.idinstitution ' .
-            'WHERE Community.parent_id = :post ' .
+            'WHERE Community.parent_id = :post ORDER BY Community.id DESC ' .
             'LIMIT :qty OFFSET :since',
             array(
                 ':post'=>$f3->get('PARAMS.id'),
@@ -822,14 +836,132 @@ $f3->route('GET /community_post/@id',
         
         // Count
         $f3->get('db')->exec(
-            'SELECT Users.id AS iduser, Users.id AS iduser, Users.name, Institutions.name AS instname, Institutions.id AS instid, Community.* FROM Community ' .
+            'SELECT Users.id AS iduser, Users.id AS iduser, Users.name, Community.* FROM Community ' .
             'INNER JOIN Users ON Users.id = Community.iduser ' .
-            'INNER JOIN Institutions ON Institutions.id = Community.idinstitution ' .
             'WHERE Community.parent_id = ?', $f3->get('PARAMS.id')
         ); 
         $f3->set('count', $f3->get('db')->count());
         
         echo \Template::instance()->render('templates/dashboard.html');
+    }
+);
+
+$f3->route('GET /create_post_community/@id',
+    function($f3) {
+        $f3->set('page','create_post_community');
+
+        // Verify if is logged
+        if(!$f3->get('SESSION.logged')){ $f3->reroute('/login'); }
+        
+        $f3->set('res_institution', $f3->get('db')->exec(
+                'SELECT id, name FROM Institutions ' .
+                'WHERE Institutions.id = :idinstitution ',
+            array(
+                ':idinstitution'=>$f3->get('PARAMS.id')
+            )
+        ));
+        
+        echo \Template::instance()->render('templates/dashboard.html');
+    }
+);
+
+$f3->route('POST /proc-create_post_community/@id',
+    function($f3) {
+        $f3->set('page','proc-create_post_community');
+
+        // Verify if is logged
+        if(!$f3->get('SESSION.logged')){ $f3->reroute('/login'); }
+        
+        // Add Post
+        $f3->set('sql', new DB\SQL\Mapper($f3->get('db'), 'Community'));
+        $f3->get('sql')->iduser =                 $f3->get('SESSION.id')[0]['id'];
+        $f3->get('sql')->idinstitution =          $f3->get('PARAMS.id');
+        $f3->get('sql')->title =                  $f3->get('POST.title');
+        $f3->get('sql')->body =                   $f3->get('POST.body');
+        $f3->get('sql')->save();
+        
+        $idpost = $f3->get('sql')->get('_id');
+        
+        // Notice all followers of this Institution about the new thread
+        $f3->set('res_followers', $f3->get('db')->exec(
+            'SELECT Users.name, Users.email, Institutions.name AS instname FROM Users_Institutions ' .
+            'INNER JOIN Users ON Users_Institutions.iduser = Users.id ' .
+            'INNER JOIN Institutions ON Users_Institutions.idinstitution = Institutions.id ' .
+            'WHERE Users_Institutions.idinstitution = ? ', $f3->get('PARAMS.id')
+        ));
+        foreach($f3->get('res_followers') as $follower){
+            $f3->get('smtp')->set('To', '"' . $follower['name'] . '" <' . $follower['email'] . '>');
+            $f3->get('smtp')->set('From', '"Archives World Map" <' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
+            $f3->get('smtp')->set('Subject', '[Archives World Map] New post at '.$follower['instname'].' forum');
+            $f3->get('smtp')->set('Errors-to', '<admin@archivesmap.org>');
+            $f3->get('smtp')->set('content-type','text/html;charset=utf-8');
+            $f3->set('message', 'Hi' . ' ' . $iduser[0]['name'] . '!' .
+                '<p>Someone posted the new thread <strong>'.$f3->get('POST.title').'</strong> in the <strong>'.$follower['instname'].
+                '</strong> forum at Archives World Map. This email was sent because you follow that institution in our platform.</p>' . 
+                '<p>Best regards,</p>' .
+                '<p>Ricardo Sodré Andrade' . 
+                '<br>admin@archivesmap.org' .
+                '<br><a href="https://www.archivesmap.org">https://www.archivesmap.org</a></p>'
+            );
+            $f3->get('smtp')->send($f3->get('message'));
+        }
+
+        
+        $f3->reroute('/community/'.$f3->get('PARAMS.id').'?qty=10&since=0');
+    }
+);
+
+$f3->route('GET /reply_post_community/@id',
+    function($f3) {
+        $f3->set('page','reply_post_community');
+        
+        // Verify if is logged
+        if(!$f3->get('SESSION.logged')){ $f3->reroute('/login'); }
+        
+        // Get Thread post data
+        $f3->set('res_community', $f3->get('db')->exec(
+                'SELECT id, title FROM Community ' .
+                'WHERE Community.id = :idcommunity ',
+            array(
+                ':idcommunity'=>$f3->get('PARAMS.id')
+            )
+        ));
+        
+        $f3->set('res_institution', $f3->get('db')->exec(
+                'SELECT id, name FROM Institutions ' .
+                'WHERE Institutions.id = :idinstitution ',
+            array(
+                ':idinstitution'=>$f3->get('PARAMS.id')
+            )
+        ));
+        
+        echo \Template::instance()->render('templates/dashboard.html');
+    }
+);
+
+$f3->route('POST /proc-reply_post_community/@id',
+    function($f3) {
+        $f3->set('page','proc-reply_post_community');
+        
+        // Verify if is logged
+        if(!$f3->get('SESSION.logged')){ $f3->reroute('/login'); }
+        
+        // Add Post
+        $f3->set('sql', new DB\SQL\Mapper($f3->get('db'), 'Community'));
+        $f3->get('sql')->iduser =                 $f3->get('SESSION.id')[0]['id'];
+        $f3->get('sql')->parent_id =              $f3->get('PARAMS.id');
+        $f3->get('sql')->body =                   $f3->get('POST.body');
+        $f3->get('sql')->save();
+        
+        $idpost = $f3->get('sql')->get('_id');
+        
+        // Find the parent_id
+        $parent = $f3->get('db')->exec(
+            'SELECT parent_id FROM Community ' .
+            'WHERE id = ' . $idpost
+        ); 
+
+        $f3->reroute('/community_post/'.(int)$parent[0]['parent_id'].'?qty=10&since=0');
     }
 );
 
