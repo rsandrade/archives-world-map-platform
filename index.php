@@ -87,7 +87,8 @@ $f3->route('POST /proc-add',
         if ($resp->isSuccess()) {
             // Recaptcha verified! 
             
-             $iduser = $f3->get('db')->exec('SELECT id,name, email FROM Users WHERE email = ?', $f3->get('POST.contributoremail'));
+            $iduser = $f3->get('db')->exec(
+                'SELECT id,name, email FROM Users WHERE email = ?', $f3->get('POST.contributoremail'));
 
             // If the email is not in Users table...
             if($f3->get('db')->count() == 0){
@@ -113,8 +114,8 @@ $f3->route('POST /proc-add',
                 $f3->get('sql')->country =              $f3->get('POST.country');
                 $f3->get('sql')->url =                  $f3->get('POST.url');
                 $f3->get('sql')->email =                $f3->get('POST.email');
-                $f3->get('sql')->collaborator_name =    $f3->get('POST.collaborator_name');
-                $f3->get('sql')->collaborator_email =   $f3->get('POST.collaborator_email');
+                $f3->get('sql')->collaborator_name =    $f3->get('POST.contributor');
+                $f3->get('sql')->collaborator_email =   $f3->get('POST.contributoremail');
                 $f3->get('sql')->status =               'waiting';
                 $f3->get('sql')->save();
                 
@@ -140,8 +141,8 @@ $f3->route('POST /proc-add',
                 $f3->get('sql')->country =              $f3->get('POST.country');
                 $f3->get('sql')->url =                  $f3->get('POST.url');
                 $f3->get('sql')->email =                $f3->get('POST.email');
-                $f3->get('sql')->collaborator_name =    $f3->get('POST.collaborator_name');
-                $f3->get('sql')->collaborator_email =   $f3->get('POST.collaborator_email');
+                $f3->get('sql')->collaborator_name =    $f3->get('POST.contributor');
+                $f3->get('sql')->collaborator_email =   $f3->get('POST.contributoremail');
                 $f3->get('sql')->status =               'waiting';
                 $f3->get('sql')->save();
                 
@@ -158,6 +159,7 @@ $f3->route('POST /proc-add',
             // Send the congratulations for add
             $f3->get('smtp')->set('To', '"' . $iduser[0]['name'] . '" <' . $iduser[0]['email'] . '>');
             $f3->get('smtp')->set('From', '"Archives World Map" <' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
+            $f3->get('smtp')->set('BCC', '"Archives World Map" <' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
             $f3->get('smtp')->set('Subject', '[Archives World Map] Thank you for your submission');
             $f3->get('smtp')->set('Errors-to', '<ricardo@feudo.org>');
             $f3->get('smtp')->set('content-type','text/html;charset=utf-8');
@@ -446,16 +448,32 @@ $f3->route('GET /dashboard',
         ));
      
         // List Intitutions
-        $f3->set('res_institutions', $f3->get('db')->exec(
+        if($f3->get('GET.q') == '' || empty($f3->get('GET.q'))){
+            $f3->set('res_institutions', $f3->get('db')->exec(
             'SELECT Institutions.id, Institutions.name, Institutions.country, Users_Institutions.id AS iduserinst FROM Institutions ' .
-            'LEFT JOIN Users_Institutions ON Users_Institutions.idinstitution = Institutions.id ' .
+            'LEFT JOIN Users_Institutions ON Users_Institutions.idinstitution = Institutions.id ' . ' ' .
             'AND Users_Institutions.iduser = ' . $f3->get('SESSION.id')[0]['id'] . ' ' .
             'LIMIT :limit OFFSET :offset',
             array(
                 ':limit'=>(int)$f3->get('GET.qty'),
                 ':offset'=>(int)$f3->get('GET.since')
-            )
-        ));
+                )
+            ));
+        } 
+        if($f3->get('GET.q') != ''){
+            $f3->set('res_institutions', $f3->get('db')->exec(
+                'SELECT Institutions.id, Institutions.name, Institutions.country, Users_Institutions.id AS iduserinst FROM Institutions ' .
+                'LEFT JOIN Users_Institutions ON Users_Institutions.idinstitution = Institutions.id ' . ' ' .
+                'AND Users_Institutions.iduser = ' . $f3->get('SESSION.id')[0]['id'] . ' ' .
+                'WHERE Institutions.name LIKE :q ' .
+                'LIMIT :limit OFFSET :offset',
+                array(
+                    ':q'=>'%'.$f3->get('GET.q').'%',
+                    ':limit'=>(int)$f3->get('GET.qty'),
+                    ':offset'=>(int)$f3->get('GET.since')
+                )
+            ));
+        }
         
         // Count
         $f3->get('db')->exec('SELECT id FROM Institutions');
@@ -501,6 +519,83 @@ $f3->route('GET /myinstitutions',
     }
 );
 
+$f3->route('GET /waitinglist',
+    function($f3) {
+        $f3->set('page','waitinglist');
+
+        // Verify if is logged
+        if(!$f3->get('SESSION.logged')){ $f3->reroute('/'); }
+        if(!$f3->get('SESSION.privilege') == 'admin'){ $f3->reroute('/dashboard?qty=10&since=0'); }
+               
+        // Get "My Institutions"
+        $f3->set('res_myinstitutions', $f3->get('db')->exec(
+            'SELECT Institutions.id, Institutions.name, Institutions.country, Institutions.latitude, Institutions.longitude, ' . 
+            'Users.id as iduser, Users.name as nameuser FROM Users_Institutions ' .
+            'INNER JOIN Institutions ON Users_Institutions.idinstitution = Institutions.id ' .
+            'INNER JOIN Users ON Users_Institutions.iduser = Users.id ' .
+            'WHERE status = "waiting" ' .
+            'LIMIT :limit OFFSET :offset',
+            array(
+                ':limit'=>(int)$f3->get('GET.qty'),
+                ':offset'=>(int)$f3->get('GET.since')
+            )
+        ));
+        
+        // Count
+        $f3->get('db')->exec(
+            'SELECT Institutions.id, Institutions.name, Institutions.country, Institutions.latitude, Institutions.longitude, ' . 
+            'Users.id as iduser, Users.name as nameuser FROM Users_Institutions ' .
+            'INNER JOIN Institutions ON Users_Institutions.idinstitution = Institutions.id ' .
+            'INNER JOIN Users ON Users_Institutions.iduser = Users.id ' .
+            'WHERE status = "waiting" '
+        );
+        $f3->set('count', $f3->get('db')->count());
+
+        echo \Template::instance()->render('templates/dashboard.html');
+    }
+);
+
+$f3->route('GET /acceptwaitinglist/@id',
+    function($f3) {
+        $f3->set('page','acceptwaitinglist');
+    
+        // Verify if is logged
+        if(!$f3->get('SESSION.logged')){ $f3->reroute('/'); }
+        if(!$f3->get('SESSION.privilege') == 'admin'){ $f3->reroute('/dashboard?qty=10&since=0'); }
+        
+        // Approve
+        $f3->set('sql', new DB\SQL\Mapper($f3->get('db'), 'Institutions'));
+        $f3->get('sql')->load(array('id = ?', $f3->get('PARAMS.id')));
+        
+        $f3->get('sql')->status =            'verified';
+        $f3->get('sql')->save();
+        
+        // Tell the contributor its approved
+        $f3->set('res_user', $f3->get('db')->exec(
+            'SELECT Users.name, Users.email, Institutions.name AS instname FROM Users_Institutions ' .
+            'INNER JOIN Users ON Users_Institutions.iduser = Users.id ' .
+            'INNER JOIN Institutions ON Users_Institutions.idinstitution = Institutions.id ' .
+            'WHERE Users_Institutions.idinstitution = ? ', $f3->get('PARAMS.id')
+        ));
+        
+        $f3->get('smtp')->set('To', '"' . $f3->get('res_user')[0]['nome'] . '" <' . $f3->get('res_user')[0]['email'] . '>');
+        $f3->get('smtp')->set('From', '"Archives World Map" <' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
+        $f3->get('smtp')->set('Subject', '[Archives World Map] The institution was approved');
+        $f3->get('smtp')->set('Errors-to', '<admin@archivesmap.org>');
+        $f3->get('smtp')->set('content-type','text/html;charset=utf-8');
+        $f3->set('message', 'Hi' . ' ' . $f3->get('res_user')[0]['nome'] . '!<br>' .
+            '<p>You submitted data about <strong>'.$f3->get('res_user')[0]['instname'].'</strong> and we approved it! :)</p>' .
+            '<p>Best regards,</p>' .
+            '<p>Ricardo Sodré Andrade' . 
+            '<br>admin@archivesmap.org' .
+            '<br><a href="https://www.archivesmap.org">https://www.archivesmap.org</a></p>'
+        );
+        $f3->get('smtp')->send($f3->get('message'));
+    
+        $f3->reroute($_SERVER['HTTP_REFERER']);
+    }
+);
+
 $f3->route('GET /institution/@id',
     function($f3) {
         $f3->set('page','institution');
@@ -510,7 +605,7 @@ $f3->route('GET /institution/@id',
         
         $f3->set('res_institution', $f3->get('db')->exec(
             'SELECT Institutions.*, Users.id AS iduser FROM Institutions ' .
-            'INNER JOIN Users ON Users.email = Institutions.collaborator_email ' .
+            'LEFT JOIN Users ON Users.email = Institutions.collaborator_email ' .
             'WHERE Institutions.id = ?', $f3->get('PARAMS.id')
         )); 
 
@@ -639,6 +734,8 @@ $f3->route('GET /addtomyinstitutions/@id',
         $f3->reroute($_SERVER['HTTP_REFERER']);
     }
 );
+
+
 
 $f3->route('GET /removefrommyinstitutions/@id',
     function($f3) {
@@ -895,7 +992,7 @@ $f3->route('POST /proc-create_post_community/@id',
             $f3->get('smtp')->set('Subject', '[Archives World Map] New post at '.$follower['instname'].' forum');
             $f3->get('smtp')->set('Errors-to', '<admin@archivesmap.org>');
             $f3->get('smtp')->set('content-type','text/html;charset=utf-8');
-            $f3->set('message', 'Hi' . ' ' . $iduser[0]['name'] . '!' .
+            $f3->set('message', 'Hi' . ' ' . $follower['name'] . '!' .
                 '<p>Someone posted the new thread <strong>'.$f3->get('POST.title').'</strong> in the <strong>'.$follower['instname'].
                 '</strong> forum at Archives World Map. This email was sent because you follow that institution in our platform.</p>' . 
                 '<p>Best regards,</p>' .
@@ -962,6 +1059,36 @@ $f3->route('POST /proc-reply_post_community/@id',
         ); 
 
         $f3->reroute('/community_post/'.(int)$parent[0]['parent_id'].'?qty=10&since=0');
+    }
+);
+
+$f3->route('GET /help',
+    function($f3) {
+        $f3->set('page','help');
+
+        // Verify if is logged
+        if(!$f3->get('SESSION.logged')){ $f3->reroute('/'); }
+               
+        echo \Template::instance()->render('templates/dashboard.html');
+    }
+);
+
+$f3->route('POST /proc-help',
+    function($f3) {
+        $f3->set('page','proc-help');
+
+        // Verify if is logged
+        if(!$f3->get('SESSION.logged')){ $f3->reroute('/'); }
+               
+        $f3->get('smtp')->set('To', '"Archives World Map" <' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
+        $f3->get('smtp')->set('From', '<' . $f3->get('SESSION.email') . '>');
+        $f3->get('smtp')->set('Subject', $f3->get('POST.subject'));
+        $f3->get('smtp')->set('Errors-to', '<ricardo@feudo.org>');
+        $f3->get('smtp')->set('content-type','text/html;charset=utf-8');
+        $f3->set('message', 'Sent by: ' . $f3->get('SESSION.email') .'<p>'. $f3->get('POST.body'));
+        $f3->get('smtp')->send($f3->get('message'));
+               
+        echo \Template::instance()->render('templates/dashboard.html');
     }
 );
 
@@ -1070,6 +1197,36 @@ $f3->route('GET /migra_rel_user_inst',
                 //echo $user['id'] . ', ' . $inst['id'] . '<br>';
                 $f3->get('dbi')->exec('INSERT INTO Users_Institutions(iduser,idinstitution) VALUES('.$user['id'].', '.$inst['id'].')');
             }    
+        }
+    }
+);
+
+$f3->route('GET /oldusers',
+    function($f3) {
+        $f3->set('page','oldusers');
+        
+        $users = $f3->get('db')->exec('SELECT id,name,email FROM Users');
+        foreach($users as $user){
+            
+            $f3->get('smtp')->set('To', '"' . $user['name'] . '" <' . $user['email'] . '>');
+            $f3->get('smtp')->set('From', '"Archives World Map" <' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
+            $f3->get('smtp')->set('Subject', '[Archives World Map] Announcemnt: A new platform for a better Map');
+            $f3->get('smtp')->set('Errors-to', '<admin@archivesmap.org>');
+            $f3->get('smtp')->set('content-type','text/html;charset=utf-8');
+            $f3->set('message', 'Hi' . ' ' . $follower['name'] . '!' .
+                '<p>I am proud to announce the newest beta release of the Archives World Map 2.0 - more collaborative ' .
+                'than ever.<p>' .
+                '<p>You can know more about this in https://groups.google.com/forum/#!topic/archives-world-map/GuslMdLzVuo</p>' .
+                '<p>Please, access our URL to access the newest features avaiable for our users.</p>' . 
+                '<p>https://www.archivesmap.org</p>' . 
+                '<p>Best regards,</p>' .
+                '<p>Ricardo Sodré Andrade' . 
+                '<br>admin@archivesmap.org' .
+                '<br><a href="https://www.archivesmap.org">https://www.archivesmap.org</a></p>'
+            );
+            $f3->get('smtp')->send($f3->get('message'));
+            echo $user['name'] . ' ' . $user['email'] . '<br>';
+              
         }
     }
 );

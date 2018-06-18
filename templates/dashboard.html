@@ -64,6 +64,20 @@
                                 My Institutions
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link<check if="{{ @page=='help' }}"> active</check>" href="/help">
+                                <span data-feather="help-circle"></span>
+                                Help
+                            </a>
+                        </li>
+                        <check if="{{ @SESSION.privilege[0]['privilege']=='admin' }}">
+                        <li class="nav-item">
+                            <a class="nav-link<check if="{{ @page=='waitinglist' }}"> active</check>" href="/waitinglist?qty=10&since=0">
+                                <span data-feather="box"></span>
+                                Waiting list
+                            </a>
+                        </li>
+                        </check>
                     </ul>
                 </div>
             </nav>
@@ -75,7 +89,7 @@
             
             <check if="{{ @page=='dashboard' }}">
             
-                <h4>Last Threads</h4>
+                <h4>Last threads</h4>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead class="thead-dark">
@@ -102,6 +116,15 @@
                 <p>
                 
                 <h4 id="institutions">Institutions</h4>
+                <form class="form-inline" method="GET" action="/dashboard">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="q" name="q">
+                        <input type="hidden" id="qty" name="qty" value="10">
+                        <input type="hidden" id="since" name="since" value="0">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
+                <br>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead class="thead-dark">
@@ -273,6 +296,49 @@
                         </div>
                     </div>
                 </repeat>
+            </check>
+            
+            <check if="{{ @page=='waitinglist' }}">
+                <h4>Waiting List</h4>
+                <div class="table-responsive">
+                    
+                    <table class="table table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Institution</th>
+                                <th scope="col">Country</th>
+                                <th scope="col">Google Map</th>
+                                <th scope="col">Contributor</th>
+                                <th scope="col">Command</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <repeat group="{{ @res_myinstitutions }}" value="{{ @item }}">
+                                <tr>
+                                    <td><a href="/institution/{{ @item.id }}">{{ @item.name }}</a></td>
+                                    <td><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></td>
+                                    <td><a href="http://maps.google.com/?q={{ @item.latitude }},{{ @item.longitude }}" target="_blank">Google Maps</a></td>
+                                    <td>{{ @item.nameuser }}</td>
+                                    <td><a href="/acceptwaitinglist/{{ @item.id }}">Accept</a></td>
+                                </tr>
+                            </repeat>
+                        </tbody>
+                    </table>
+                    
+                    <check if="{{ @count==0 }}">
+                        No records were found.
+                    </check>
+                    <check if="{{ @count>0 }}">
+                        <check if="{{ @GET.since>0 }}">
+                          <a href="/myinstitutions?since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
+                        </check>
+                          {{ @GET.since }} to {{ @GET.qty+@GET.since }} of {{ @count }}
+                        <check if="{{ @count>@GET.qty+@GET.since }}">
+                          <a href="/myinstitutions?since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
+                        </check>
+                    </check>
+                    
+                </div>
             </check>
             
             <check if="{{ @page=='content' }}">
@@ -999,6 +1065,49 @@
                         </div>
                     </div>
                 </repeat>
+            </check>
+            
+            <check if="{{ @page=='help' }}">
+                <a href="javascript:history.back()">Back</a><br>
+                <div class="container">
+                    <br>
+                    <h4>Contact the Archives World Map Team</h4><br>
+                    <div class="row">
+                        <div class="col">
+                            <form action="/proc-help" method="POST">
+                            <table class="table table-striped">
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Subject </strong></td>
+                                        <td><input class="form-control" type="text" name="subject" id="subject" required></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Message</strong></td>
+                                        <td><textarea class="form-control" name="body" id="body" rows="3" required></textarea></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td><button type="submit" class="btn btn-primary">Submit</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </check>
+            
+            <check if="{{ @page=='proc-help' }}">
+                <a href="/dashboard?qty=10&since=0">To Dashboard</a><br>
+                <div class="container">
+                    <br>
+                    <h4>Thank you for contact us</h4><br>
+                    <div class="row">
+                        <div class="col">
+                            We will answer as fast we can.
+                        </div>
+                    </div>
+                </div>
             </check>
             
         </main>
