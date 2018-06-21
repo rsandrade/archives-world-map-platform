@@ -164,7 +164,7 @@ $f3->route('POST /proc-add',
             $f3->get('smtp')->set('Errors-to', '<ricardo@feudo.org>');
             $f3->get('smtp')->set('content-type','text/html;charset=utf-8');
             $f3->set('message', 'Hi' . ' ' . $iduser[0]['name'] . '!' .
-                '<p>Thank you that new institution data you sent to us! Our team will check it and add ' .
+                '<p>Thank you for that new institution you sent to us! Our team will check it and add ' .
                 'into the <strong>Archives World Map</strong> as fast we can.</p>' . 
                 '<p>You sent us data about: <strong>' . $f3->get('POST.name') . '</strong></p>' .
                 '<p>Best regards,</p>' .
@@ -1089,6 +1089,29 @@ $f3->route('POST /proc-help',
         $f3->get('smtp')->send($f3->get('message'));
                
         echo \Template::instance()->render('templates/dashboard.html');
+    }
+);
+
+$f3->route('GET /thankyou-donation',
+    function($f3) {
+        $f3->set('page','thankyou-donation');
+        
+        echo \Template::instance()->render('templates/home.html');
+    }
+);
+
+$f3->route('POST /btcpay-callback',
+    function($f3) {
+        $f3->set('page','btcpay-callback');
+        
+        $f3->get('smtp')->set('To', '"Archives World Map" <' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
+        $f3->get('smtp')->set('From', '<' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
+        $f3->get('smtp')->set('Subject', 'Donation!');
+        $f3->get('smtp')->set('Errors-to', '<ricardo@feudo.org>');
+        $f3->get('smtp')->set('content-type','text/html;charset=utf-8');
+        $f3->set('message', 'Somebody donate cryptocurrency.');
+        $f3->get('smtp')->send($f3->get('message'));
+        
     }
 );
 
