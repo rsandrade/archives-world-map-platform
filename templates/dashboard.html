@@ -148,8 +148,8 @@
                                         </true>
                                     </check>
                                     <td><a href="/institution/{{ @item.id }}">{{ @item.name }}</a></td>
-                                    <td><a href="/bycountry/{{ @item.country }}?qty=10&since=0"><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></a></td>
-                                    <exclude><exclude><exclude><td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td></exclude></exclude></exclude>
+                                    <td><a href="/bycountry?country={{ @item.country }}&qty=10&since=0"><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></a></td>
+                                    <exclude><td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td></exclude>
                                     <td><a href="/community/{{ @item.id }}?qty=10&since=0">Forum</a></td>
                                 </tr>
                             </repeat>
@@ -318,7 +318,7 @@
                                     <td><a href="/institution/{{ @item.id }}">{{ @item.name }}</a></td>
                                     <td><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></td>
                                     <td><a href="http://maps.google.com/?q={{ @item.latitude }},{{ @item.longitude }}" target="_blank">Google Maps</a></td>
-                                    <td>{{ @item.nameuser }}</td>
+                                    <td>{{ @item.collaborator_name }}</td>
                                     <td><a href="/acceptwaitinglist/{{ @item.id }}">Accept</a></td>
                                 </tr>
                             </repeat>
@@ -559,7 +559,7 @@
             
             <check if="{{ @page=='bycountry' }}">
                 <a href="javascript:history.back()">Back</a><br>
-                <h4>Institutions in <img src="/templates/img/flags/{{ @PARAMS.country }}.PNG" title="{{ @PARAMS.country }}"></h4>
+                <h4>Institutions in <img src="/templates/img/flags/{{ @GET.country }}.PNG" title="{{ @GET.country }}"></h4>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead class="thead-dark">
@@ -574,7 +574,7 @@
                             <repeat group="{{ @res_institutions }}" value="{{ @item }}">
                                 <tr>
                                     <td><a href="/institution/{{ @item.id }}">{{ @item.name }}</a></td>
-                                    <td><img src="/templates/img/flags/{{ @item.country }}.PNG" title="{{ @item.country }}"></td>
+                                    <td><img src="/templates/img/flags/{{ @GET.country }}.PNG" title="{{ @GET.country }}"></td>
                                     <exclude><td><a href="/content/{{ @item.id }}?qty=10&since=0">Repository</a></td></exclude>
                                     <td><a href="/community/{{ @item.id }}?qty=10&since=0">Forum</a></td>
                                 </tr>
@@ -587,11 +587,11 @@
                     </check>
                     <check if="{{ @count>0 }}">
                         <check if="{{ @GET.since>0 }}">
-                          <a href="/q?search={{ @GET.search }}&since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
+                          <a href="/bycountry?country={{ @GET.country }}&since={{ @GET.since-@GET.qty }}&qty={{ @GET.qty }}">Previous</a>
                         </check>
                           {{ @GET.since }} to {{ @GET.qty+@GET.since }} ({{ @count }} items found)
                         <check if="{{ @count>@GET.qty+@GET.since }}">
-                          <a href="/q?search={{ @GET.search }}&since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
+                          <a href="/bycountry?country={{ @GET.country }}&since={{ @GET.qty+@GET.since }}&qty={{ @GET.qty }}">Next</a>
                         </check>
                     </check>
                 </div>

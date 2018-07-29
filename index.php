@@ -14,9 +14,6 @@ if($f3->get('GET.language')){
     header('Location: '.$_SERVER['HTTP_REFERER']);
 }
 
-// Env vars
-require('config.php');
-
 // Fat-free vars
 $f3->set('TEMP', $f3->get('AWM_TEMP_DIR'));
 $f3->set('DEBUG', 0); // 0 = production; 3 = debug mode
@@ -529,10 +526,7 @@ $f3->route('GET /waitinglist',
                
         // Get "My Institutions"
         $f3->set('res_myinstitutions', $f3->get('db')->exec(
-            'SELECT Institutions.id, Institutions.name, Institutions.country, Institutions.latitude, Institutions.longitude, ' . 
-            'Users.id as iduser, Users.name as nameuser FROM Users_Institutions ' .
-            'INNER JOIN Institutions ON Users_Institutions.idinstitution = Institutions.id ' .
-            'INNER JOIN Users ON Users_Institutions.iduser = Users.id ' .
+            'SELECT id, name, country, latitude, longitude, collaborator_name, collaborator_email FROM Institutions ' .
             'WHERE status = "waiting" ' .
             'LIMIT :limit OFFSET :offset',
             array(
@@ -540,13 +534,10 @@ $f3->route('GET /waitinglist',
                 ':offset'=>(int)$f3->get('GET.since')
             )
         ));
-        
+
         // Count
         $f3->get('db')->exec(
-            'SELECT Institutions.id, Institutions.name, Institutions.country, Institutions.latitude, Institutions.longitude, ' . 
-            'Users.id as iduser, Users.name as nameuser FROM Users_Institutions ' .
-            'INNER JOIN Institutions ON Users_Institutions.idinstitution = Institutions.id ' .
-            'INNER JOIN Users ON Users_Institutions.iduser = Users.id ' .
+            'SELECT id, name, country, latitude, longitude, collaborator_name, collaborator_email FROM Institutions ' .
             'WHERE status = "waiting" '
         );
         $f3->set('count', $f3->get('db')->count());
@@ -777,8 +768,8 @@ $f3->route('GET /q',
         
         // Get Institutions
         $f3->set('res_institutions', $f3->get('db')->exec(
-                'SELECT id, name, country FROM Institutions ' .
-                'WHERE name LIKE :search LIMIT :qty OFFSET :since', 
+            'SELECT id, name, country FROM Institutions ' .
+            'WHERE name LIKE :search AND status = "verified" LIMIT :qty OFFSET :since', 
             array(
                 ':search'=>'%'.$f3->get('GET.search').'%',
                 ':qty'=>(int)$f3->get('GET.qty'),
@@ -789,7 +780,10 @@ $f3->route('GET /q',
         // Count
         $f3->get('db')->exec(
             'SELECT id, name, country FROM Institutions ' .
-            'WHERE name LIKE ?', '%'.$f3->get('GET.search').'%'
+            'WHERE name LIKE :search AND status = "verified" ', 
+            array(
+                ':search'=>'%'.$f3->get('GET.search').'%'
+            )
         );
         $f3->set('count', $f3->get('db')->count());
     
@@ -797,16 +791,16 @@ $f3->route('GET /q',
     }
 );
 
-$f3->route('GET /bycountry/@country',
+$f3->route('GET /bycountry',
     function($f3) {
         $f3->set('page','bycountry');   
                  
         // Get Institutions
         $f3->set('res_institutions', $f3->get('db')->exec(
-                'SELECT id, name, country FROM Institutions ' .
-                'WHERE country = :country LIMIT :qty OFFSET :since', 
+            'SELECT id, name, country FROM Institutions ' .
+            'WHERE country = :country LIMIT :qty OFFSET :since', 
             array(
-                ':country'=>$f3->get('PARAMS.country'),
+                ':country'=>$f3->get('GET.country'),
                 ':qty'=>(int)$f3->get('GET.qty'),
                 ':since'=>(int)$f3->get('GET.since')
             )
@@ -814,8 +808,11 @@ $f3->route('GET /bycountry/@country',
         
         // Count
         $f3->get('db')->exec(
-            'SELECT id FROM Institutions ' .
-            'WHERE country = ?', $f3->get('PARAMS.country')
+            'SELECT id, name, country FROM Institutions ' .
+            'WHERE country = :country', 
+            array(
+                ':country'=>$f3->get('GET.country')
+            )
         );
         $f3->set('count', $f3->get('db')->count());
         
@@ -1089,6 +1086,43 @@ $f3->route('POST /proc-help',
         $f3->get('smtp')->send($f3->get('message'));
                
         echo \Template::instance()->render('templates/dashboard.html');
+    }
+);
+
+$f3->route('GET /contact',
+    function($f3) {
+        $f3->set('page','contact');
+               
+        echo \Template::instance()->render('templates/home.html');
+    }
+);
+
+$f3->route('POST /proc-contact',
+    function($f3) {
+        $f3->set('page','proc-contact');
+
+        $recaptcha = new \ReCaptcha\ReCaptcha($f3->get('AWM_PRIVATE_KEY_RECAPCHA')); // https://www.google.com/recaptcha/
+        $resp = $recaptcha->verify($_POST['g-recaptcha-response'], $_SERVER['REMOTE_ADDR']);
+        if ($resp->isSuccess()) {
+            // Recaptcha verified! 
+                   
+            $f3->get('smtp')->set('To', '"Archives World Map" <' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
+            $f3->get('smtp')->set('From', '"' . $f3->get('POST.name') . '" <' . $f3->get('POST.email') . '>');
+            $f3->get('smtp')->set('Subject', $f3->get('POST.subject'));
+            $f3->get('smtp')->set('Errors-to', '<ricardo@feudo.org>');
+            $f3->get('smtp')->set('content-type','text/html;charset=utf-8');
+            $f3->set('message', 'Name: ' . $f3->get('POST.name') . 
+                                'Institution: ' . $f3->get('POST.institution') . 
+                                '<p>' . $f3->get('POST.body') . '</p>');
+            $f3->get('smtp')->send($f3->get('message'));
+            
+            $f3->set('warnemailsent', 'Thank your for your message!');
+            
+        } else {
+            $f3->set('warnemailsent', 'Sorry, for any reason the form did not send your message.');
+        }
+               
+        echo \Template::instance()->render('templates/home.html');
     }
 );
 
