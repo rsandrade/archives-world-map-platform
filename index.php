@@ -158,7 +158,7 @@ $f3->route('POST /proc-add',
             $f3->get('smtp')->set('From', '"Archives World Map" <' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
             $f3->get('smtp')->set('BCC', '"Archives World Map" <' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
             $f3->get('smtp')->set('Subject', '[Archives World Map] Thank you for your submission');
-            $f3->get('smtp')->set('Errors-to', '<ricardo@feudo.org>');
+            $f3->get('smtp')->set('Errors-to', '<admin@archivesmap.org>');
             $f3->get('smtp')->set('content-type','text/html;charset=utf-8');
             $f3->set('message', 'Hi' . ' ' . $iduser[0]['name'] . '!' .
                 '<p>Thank you for that new institution you sent to us! Our team will check it and add ' .
@@ -339,7 +339,7 @@ $f3->route('POST /proc-register',
             $f3->get('smtp')->set('To', '"' . $f3->get('POST.inputName') . '" <' . $f3->get('POST.inputEmail') . '>');
             $f3->get('smtp')->set('From', '"Archives World Map" <' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
             $f3->get('smtp')->set('Subject', '[Archives World Map] Your account was created');
-            $f3->get('smtp')->set('Errors-to', '<ricardo@feudo.org>');
+            $f3->get('smtp')->set('Errors-to', '<admin@archivesmap.org>');
             $f3->get('smtp')->set('content-type','text/html;charset=utf-8');
             $f3->set('message', 'Hi' . ' ' . $f3->get('POST.inputName') . '!' .
                 '<p>A new account in <strong>Archives World Map</strong> was created.</p>' . 
@@ -398,7 +398,7 @@ $f3->route('POST /proc-recover-password',
                 $f3->get('smtp')->set('To', '"' . $f3->get('res_recover')[0]['name'] . '" <' . $f3->get('res_recover')[0]['email'] . '>');
                 $f3->get('smtp')->set('From', '"Archives World Map" <' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
                 $f3->get('smtp')->set('Subject', '[Archives World Map] Your password was changed');
-                $f3->get('smtp')->set('Errors-to', '<ricardo@feudo.org>');
+                $f3->get('smtp')->set('Errors-to', '<admin@archivesmap.org>');
                 $f3->get('smtp')->set('content-type','text/html;charset=utf-8');
                 $f3->set('message', 'Hi' . ' ' . $f3->get('res_recover')[0]['name'] . '!' .
                     '<p>Your password at <strong>Archives World Map</strong> was changed.</p>' . 
@@ -1080,7 +1080,7 @@ $f3->route('POST /proc-help',
         $f3->get('smtp')->set('To', '"Archives World Map" <' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
         $f3->get('smtp')->set('From', '<' . $f3->get('SESSION.email') . '>');
         $f3->get('smtp')->set('Subject', $f3->get('POST.subject'));
-        $f3->get('smtp')->set('Errors-to', '<ricardo@feudo.org>');
+        $f3->get('smtp')->set('Errors-to', '<admin@archivesmap.org>');
         $f3->get('smtp')->set('content-type','text/html;charset=utf-8');
         $f3->set('message', 'Sent by: ' . $f3->get('SESSION.email') .'<p>'. $f3->get('POST.body'));
         $f3->get('smtp')->send($f3->get('message'));
@@ -1109,7 +1109,7 @@ $f3->route('POST /proc-contact',
             $f3->get('smtp')->set('To', '"Archives World Map" <' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
             $f3->get('smtp')->set('From', '"' . $f3->get('POST.name') . '" <' . $f3->get('POST.email') . '>');
             $f3->get('smtp')->set('Subject', $f3->get('POST.subject'));
-            $f3->get('smtp')->set('Errors-to', '<ricardo@feudo.org>');
+            $f3->get('smtp')->set('Errors-to', '<admin@archivesmap.org>');
             $f3->get('smtp')->set('content-type','text/html;charset=utf-8');
             $f3->set('message', 'Name: ' . $f3->get('POST.name') . 
                                 'Institution: ' . $f3->get('POST.institution') . 
@@ -1141,7 +1141,7 @@ $f3->route('POST /btcpay-callback',
         $f3->get('smtp')->set('To', '"Archives World Map" <' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
         $f3->get('smtp')->set('From', '<' . $f3->get('AWM_EMAIL_ADDRESS') . '>');
         $f3->get('smtp')->set('Subject', 'Donation!');
-        $f3->get('smtp')->set('Errors-to', '<ricardo@feudo.org>');
+        $f3->get('smtp')->set('Errors-to', '<admin@archivesmap.org>');
         $f3->get('smtp')->set('content-type','text/html;charset=utf-8');
         $f3->set('message', 'Somebody donate cryptocurrency.');
         $f3->get('smtp')->send($f3->get('message'));
